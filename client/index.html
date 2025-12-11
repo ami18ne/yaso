@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="buzly" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="x-ua-compatible" content="IE=edge" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>buzly - Connect & Share</title>
+    <meta name="description" content="A modern social platform combining messaging, video sharing, and community features with a stunning neon purple interface." />
+    <meta name="keywords" content="social media, messaging, video sharing, community, connection" />
+    <meta name="author" content="buzly" />
+    <meta property="og:title" content="buzly - Connect & Share" />
+    <meta property="og:description" content="A modern social platform combining messaging, video sharing, and community features with a stunning neon purple interface." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@latest/dist/twemoji.min.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <script>
+      if (window.twemoji) {
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node.nodeType === 1 && !node.hasAttribute('data-react-root')) {
+                twemoji.parse(node, {
+                  folder: 'svg',
+                  ext: '.svg'
+                });
+              }
+            });
+          });
+        });
+        
+        window.addEventListener('DOMContentLoaded', () => {
+          const root = document.getElementById('root');
+          if (root) {
+            twemoji.parse(root, { folder: 'svg', ext: '.svg' });
+            observer.observe(root, { childList: true, subtree: true });
+          }
+        });
+      }
+    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+// Buzly Web App
+// Owner: YA SO
+// Date: 11-12-2025
