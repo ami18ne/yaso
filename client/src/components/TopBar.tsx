@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, MessageCircle, PlusCircle, Search, Bell, Video } from "lucide-react";
+import { Home, MessageCircle, PlusCircle, Search, Bell, Video, Users } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfiles";
@@ -23,6 +23,7 @@ export default function TopBar() {
             <div className={`flex items-center gap-2 cursor-pointer group ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <img 
                 src={buzlyLogo} 
+                loading="eager"
                 alt="Buzly" 
                 className="h-8 w-8 md:h-9 md:w-9 object-contain transition-transform group-hover:scale-110"
               />
@@ -71,6 +72,20 @@ export default function TopBar() {
                 data-testid="button-messages"
               >
                 <MessageCircle className="h-5 w-5" />
+              </Button>
+            </Link>
+
+            <Link href="/communities">
+              <Button
+                size="icon"
+                variant="ghost"
+                className={cn(
+                  "hidden md:flex h-10 w-10 rounded-full transition-colors",
+                  location === "/communities" ? "bg-muted text-primary" : "hover:bg-muted/80"
+                )}
+                data-testid="button-communities"
+              >
+                <Users className="h-5 w-5" />
               </Button>
             </Link>
 

@@ -7,13 +7,16 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import TopBar from "@/components/TopBar";
 import BottomNav from "@/components/BottomNav";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Home from "@/pages/Home";
 import Search from "@/pages/Search";
 import Create from "@/pages/Create";
 import CreateVideo from "@/pages/CreateVideo";
 import Videos from "@/pages/Videos";
 import Messages from "@/pages/Messages";
+import Communities from "@/pages/Communities";
 import Notifications from "@/pages/Notifications";
+import CommunityPage from "@/components/Community/CommunityPage";
 import Profile from "@/pages/Profile";
 import EditProfile from "@/pages/EditProfile";
 import Settings from "@/pages/Settings";
@@ -23,6 +26,7 @@ import Auth from "@/pages/Auth";
 import VerifyOTP from "@/pages/VerifyOTP";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import E2EHarness from "@/pages/E2EHarness";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -30,6 +34,10 @@ function Router() {
   const [location] = useLocation();
 
   const publicPaths = ['/auth', '/forgot-password', '/verify-otp', '/reset-password'];
+  // Allow a dev-only E2E harness route to be reachable without authentication
+  if (process.env.NODE_ENV !== 'production') {
+    publicPaths.push('/__e2e__')
+  }
   const isPublicPath = publicPaths.includes(location);
 
   if (loading) {
@@ -47,6 +55,9 @@ function Router() {
   return (
     <Switch>
       {/* Public routes */}
+      {process.env.NODE_ENV !== 'production' && (
+        <Route path="/__e2e__" component={E2EHarness} />
+      )}
       <Route path="/auth" component={Auth} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/verify-otp" component={VerifyOTP} />
@@ -60,6 +71,7 @@ function Router() {
       <Route path="/create-video" component={CreateVideo} />
       <Route path="/videos" component={Videos} />
       <Route path="/messages" component={Messages} />
+      <Route path="/communities" component={Communities} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/profile/:username" component={Profile} />
       <Route path="/profile" component={Profile} />
@@ -67,6 +79,7 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/verify" component={VerificationRequest} />
       <Route path="/nearby" component={NearBy} />
+      <Route path="/communities/:id" component={CommunityPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -92,7 +105,9 @@ function App() {
       <LanguageProvider>
         <AuthProvider>
           <TooltipProvider>
-            <AppContent />
+            <ErrorBoundary>
+              <AppContent />
+            </ErrorBoundary>
             <Toaster />
           </TooltipProvider>
         </AuthProvider>

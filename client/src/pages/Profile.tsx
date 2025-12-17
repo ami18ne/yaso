@@ -14,6 +14,7 @@ import UserAvatar from "@/components/UserAvatar";
 import VerifiedBadge from "@/components/VerifiedBadge";
 import ImageLightbox from "@/components/ImageLightbox";
 import FollowersDialog from "@/components/FollowersDialog";
+import OptimizedImage from "@/components/OptimizedImage";
 import { isVerifiedUser } from "@/lib/verifiedUsers";
 
 export default function Profile() {
@@ -260,11 +261,10 @@ export default function Profile() {
                       onClick={() => post.image_url && setSelectedImage(post.image_url)}
                     >
                       {post.image_url ? (
-                        <img
+                        <OptimizedImage
                           src={post.image_url}
                           alt={post.content}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center p-2">
@@ -304,11 +304,10 @@ export default function Profile() {
                       onClick={() => setLocation(`/videos`)}
                     >
                       {video.thumbnail_url ? (
-                        <img
+                        <OptimizedImage
                           src={video.thumbnail_url}
                           alt={video.title || video.description || 'Video'}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center">
@@ -344,11 +343,10 @@ export default function Profile() {
                       onClick={() => post.image_url && setSelectedImage(post.image_url)}
                     >
                       {post.image_url ? (
-                        <img
+                        <OptimizedImage
                           src={post.image_url}
                           alt={post.content}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center p-2">

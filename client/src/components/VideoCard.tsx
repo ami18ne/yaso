@@ -192,6 +192,7 @@ export default function VideoCard({
         ) : thumbnailUrl ? (
           <img
             src={thumbnailUrl}
+            loading="lazy"
             alt={caption}
             className="w-full h-full object-cover"
           />

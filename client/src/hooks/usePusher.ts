@@ -5,30 +5,43 @@ const pusherInstance = new PusherClient('b899008fb2257ea055b9', {
   cluster: 'eu',
 })
 
-export function usePusher(conversationId: string | null, onNewMessage: (message: any) => void) {
+export function usePusher(
+  conversationIdOrChannelName: string | null,
+  onNewMessage: (message: any) => void,
+  options?: { isConversation?: boolean; eventName?: string }
+) {
   const channelRef = useRef<any>(null)
 
   useEffect(() => {
-    if (!conversationId) {
+    const eventName = options?.eventName || 'new-message'
+    if (!conversationIdOrChannelName) {
       if (channelRef.current) {
-        pusherInstance.unsubscribe(`conversation-${conversationId}`)
+        if (options?.isConversation ?? true) {
+          pusherInstance.unsubscribe(`conversation-${conversationIdOrChannelName}`)
+        } else {
+          pusherInstance.unsubscribe(conversationIdOrChannelName as string)
+        }
         channelRef.current = null
       }
       return
     }
 
-    const channel = pusherInstance.subscribe(`conversation-${conversationId}`)
+    const channelName = (options?.isConversation ?? true)
+      ? `conversation-${conversationIdOrChannelName}`
+      : (conversationIdOrChannelName as string)
+
+    const channel = pusherInstance.subscribe(channelName)
     channelRef.current = channel
 
-    channel.bind('new-message', (data: any) => {
+    channel.bind(eventName, (data: any) => {
       onNewMessage(data.message)
     })
 
     return () => {
-      pusherInstance.unsubscribe(`conversation-${conversationId}`)
+      pusherInstance.unsubscribe(channelName)
       channelRef.current = null
     }
-  }, [conversationId, onNewMessage])
+  }, [conversationIdOrChannelName, onNewMessage, options?.eventName, options?.isConversation])
 
   return pusherInstance
 }

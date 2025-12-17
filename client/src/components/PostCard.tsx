@@ -14,7 +14,8 @@ import DoubleTapLike from "./DoubleTapLike";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
-
+import EditPostDialog from './EditPostDialog';
+import OptimizedImage from './OptimizedImage';
 interface PostCardProps {
   id: string;
   userId: string;
@@ -53,6 +54,7 @@ export default function PostCard({
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [commentsDialogOpen, setCommentsDialogOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const likePostMutation = useLikePost();
   const savePostMutation = useSavePost();
   const { user: currentUser } = useAuth();
@@ -171,34 +173,44 @@ export default function PostCard({
               <h3 className="font-semibold text-sm hover:text-primary transition-colors">{user.username}</h3>
               {user.isVerified && <VerifiedBadge size="sm" />}
             </div>
-            <p className="text-xs text-muted-foreground">{timestamp}</p>
+            <p className="text-xs text-muted-foreground">{
+              (() => {
+                try {
+                  const d = new Date(timestamp);
+                  if (!timestamp || isNaN(d.getTime())) return 'تاريخ غير معروف';
+                  return formatDistanceToNow(d, { addSuffix: true });
+                } catch {
+                  return 'تاريخ غير معروف';
+                }
+              })()
+            }</p>
           </div>
         </button>
         <PostOptionsMenu
           postId={id}
           imageUrl={image}
           isOwnPost={currentUser?.id === userId}
+          onEdit={() => setEditOpen(true)}
         />
       </div>
 
       {image ? (
         <DoubleTapLike onDoubleTap={handleDoubleTapLike} disabled={!currentUser}>
           <div 
-            className="relative w-full aspect-square bg-muted/30 overflow-hidden cursor-zoom-in"
+            className="relative w-full aspect-square bg-muted/30 overflow-hidden cursor-zoom-in rounded-lg hover-lift"
             onClick={() => setLightboxOpen(true)}
           >
-            <img
+            <OptimizedImage
               src={image}
               alt={caption}
               className="w-full h-full object-cover transition-transform duration-500 hover:scale-[1.02]"
-              loading="lazy"
             />
           </div>
         </DoubleTapLike>
       ) : (
         <DoubleTapLike onDoubleTap={handleDoubleTapLike} disabled={!currentUser}>
-          <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/20 flex items-center justify-center">
-            <p className="text-lg font-medium text-center px-8 leading-relaxed">{caption}</p>
+          <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/20 flex items-center justify-center p-4">
+            <p className="text-lg font-medium text-center px-4 leading-relaxed max-w-prose">{caption}</p>
           </div>
         </DoubleTapLike>
       )}
@@ -211,6 +223,7 @@ export default function PostCard({
               className="group transition-transform active:scale-90"
               disabled={isLiking}
               data-testid="button-like-post"
+              aria-label={liked ? 'Unlike' : 'Like'}
             >
               <Heart 
                 className={cn(
@@ -225,6 +238,7 @@ export default function PostCard({
               className="group transition-transform active:scale-90"
               onClick={() => setCommentsDialogOpen(true)}
               data-testid="button-comment-post"
+              aria-label="Comments"
             >
               <MessageCircle className="h-6 w-6 transition-colors group-hover:text-primary" />
             </button>
@@ -232,6 +246,7 @@ export default function PostCard({
               className="group transition-transform active:scale-90"
               onClick={() => setShareDialogOpen(true)}
               data-testid="button-share-post"
+              aria-label="Share"
             >
               <Send className="h-6 w-6 transition-colors group-hover:text-primary" />
             </button>
@@ -241,6 +256,7 @@ export default function PostCard({
             className="group transition-transform active:scale-90"
             disabled={isSaving}
             data-testid="button-save-post"
+            aria-label={saved ? 'Unsave' : 'Save'}
           >
             <Bookmark 
               className={cn(
@@ -297,7 +313,15 @@ export default function PostCard({
             avatar: comment.profiles.avatar_url || undefined,
           },
           content: comment.content,
-          timestamp: formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }),
+          timestamp: (() => {
+            try {
+              const d = new Date(comment.created_at);
+              if (!comment.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف';
+              return formatDistanceToNow(d, { addSuffix: true });
+            } catch {
+              return 'تاريخ غير معروف';
+            }
+          })(),
         }))}
         onAddComment={handleAddComment}
       />
@@ -310,6 +334,14 @@ export default function PostCard({
           onClose={() => setLightboxOpen(false)}
         />
       )}
+
+      <EditPostDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        postId={id}
+        initialContent={caption}
+        initialImage={image}
+      />
     </article>
   );
 }

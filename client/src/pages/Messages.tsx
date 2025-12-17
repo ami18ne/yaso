@@ -37,6 +37,7 @@ export default function Messages() {
   const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [localMessages, setLocalMessages] = useState<any[]>([]);
+  const [typingUsers, setTypingUsers] = useState<any[]>([]);
   const [showSidebar, setShowSidebar] = useState(true);
   const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
   const [addStoryOpen, setAddStoryOpen] = useState(false);
@@ -57,6 +58,20 @@ export default function Messages() {
   }, [])
 
   usePusher(selectedConversation, handleNewMessage)
+
+  const handleTypingEvent = useCallback((event: any) => {
+    if (!event || !event.userId) return
+    setTypingUsers(prev => {
+      if (prev.some(u => u === event.userId)) return prev
+      return [...prev, event.userId]
+    })
+    // remove after 3s
+    setTimeout(() => {
+      setTypingUsers(prev => prev.filter(u => u !== event.userId))
+    }, 3000)
+  }, [])
+
+  usePusher(selectedConversation, handleTypingEvent, { eventName: 'typing', isConversation: true })
   
   useEffect(() => {
     if (conversations && conversations.length > 0 && !selectedConversation) {
@@ -373,6 +388,8 @@ export default function Messages() {
                 isOnline={true}
                 messages={formattedMessages}
                 onSendMessage={handleSendMessage}
+                conversationId={selectedConversation}
+                typingUsers={typingUsers}
               />
             </div>
           </>

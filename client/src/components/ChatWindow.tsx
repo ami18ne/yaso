@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import MessageBubble from "./MessageBubble";
+import TypingIndicator from './TypingIndicator';
 import { Send, Image, Mic, X, Square, Loader2, Smile } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { uploadChatMedia, uploadVoiceMessage } from "@/lib/storage";
@@ -32,6 +33,8 @@ interface ChatWindowProps {
   isOnline?: boolean;
   messages: Message[];
   onSendMessage?: (message: string, imageUrl?: string, audioUrl?: string) => void;
+  conversationId?: string | null;
+  typingUsers?: string[];
 }
 
 export default function ChatWindow({
@@ -41,6 +44,8 @@ export default function ChatWindow({
   isOnline = false,
   messages,
   onSendMessage,
+  conversationId,
+  typingUsers = [],
 }: ChatWindowProps) {
   const [newMessage, setNewMessage] = useState("");
   const [, setLocation] = useLocation();
@@ -241,6 +246,26 @@ export default function ChatWindow({
     }
   };
 
+  // Typing indicator: notify server when user is typing
+  useEffect(() => {
+    if (!conversationId || !user) return
+    let timeout: NodeJS.Timeout | null = null
+    if (newMessage.trim()) {
+      fetch(`/api/conversations/${conversationId}/typing`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      }).catch(() => {})
+      if (timeout) clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        // stop typing after a pause (server side will clear indicator automatically)
+      }, 2000)
+    }
+    return () => {
+      if (timeout) clearTimeout(timeout)
+    }
+  }, [newMessage, conversationId, user])
+
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -251,6 +276,11 @@ export default function ChatWindow({
     <div className="flex flex-col h-full bg-background">
       <ScrollArea ref={scrollAreaRef} className="flex-1 px-4 py-4">
         <div className="max-w-2xl mx-auto space-y-2">
+          {typingUsers.length > 0 && (
+            <div className="mb-2">
+              <TypingIndicator />
+            </div>
+          )}
           {messages.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <p className="text-muted-foreground text-sm">

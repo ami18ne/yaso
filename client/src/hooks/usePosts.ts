@@ -289,3 +289,40 @@ export function useDeletePost() {
     },
   })
 }
+
+export function useUpdatePost() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async ({ postId, content, image_url }: { postId: string; content?: string; image_url?: string | null }) => {
+      try {
+        if (!user) throw new Error('Must be logged in to update posts')
+
+        const { data, error } = await supabase
+          .from('posts')
+          .update({ content, image_url })
+          .eq('id', postId)
+          .eq('user_id', user.id)
+          .select(
+            `*, profiles:user_id (username, full_name, avatar_url)`
+          )
+          .single()
+
+        if (error) throw new Error(`Failed to update post: ${error.message}`)
+        return data
+      } catch (error) {
+        logger.error('Error in useUpdatePost:', error)
+        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating the post')
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+      toast({ title: 'Post updated', description: 'Your post has been updated successfully.' })
+    },
+    onError: (error: Error) => {
+      toast({ title: 'Error updating post', description: error.message, variant: 'destructive' })
+    },
+  })
+}

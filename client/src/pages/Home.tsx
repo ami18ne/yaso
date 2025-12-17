@@ -15,15 +15,17 @@ export default function Home() {
 
   const sortedPosts = useMemo(() => {
     if (!posts) return [];
-    
-    return [...posts].sort((a, b) => {
-      if (sortBy === 'popular') {
-        const aScore = (a.likes_count || 0) + (a.comments_count || 0) * 2;
-        const bScore = (b.likes_count || 0) + (b.comments_count || 0) * 2;
-        return bScore - aScore;
-      }
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
+    // Ignore posts with invalid or missing created_at
+    return [...posts]
+      .filter(p => p.created_at && !isNaN(new Date(p.created_at).getTime()))
+      .sort((a, b) => {
+        if (sortBy === 'popular') {
+          const aScore = (a.likes_count || 0) + (a.comments_count || 0) * 2;
+          const bScore = (b.likes_count || 0) + (b.comments_count || 0) * 2;
+          return bScore - aScore;
+        }
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      });
   }, [posts, sortBy]);
 
   if (isLoading) {
@@ -80,31 +82,63 @@ export default function Home() {
 
           {sortedPosts && sortedPosts.length > 0 ? (
             <div className="space-y-4 md:space-y-6 md:p-4">
-              {sortedPosts.map((post, index) => (
-                <div 
-                  key={post.id} 
-                  className="animate-slide-up md:rounded-2xl md:overflow-hidden md:border md:border-border/30 md:bg-card/50 md:backdrop-blur-sm"
-                  style={{ animationDelay: `${index * 50}ms` }}
-                >
-                  <PostCard
-                    id={post.id}
-                    userId={post.user_id}
-                    user={{
-                      name: post.profiles.full_name || post.profiles.username,
-                      username: post.profiles.username,
-                      avatar: post.profiles.avatar_url || undefined,
-                      isVerified: isVerifiedUser(post.profiles.username),
-                    }}
-                    image={post.image_url || undefined}
-                    caption={post.content}
-                    likes={post.likes_count || 0}
-                    comments={post.comments_count || 0}
-                    timestamp={formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
-                    isLiked={post.is_liked}
-                    isSaved={post.is_saved}
-                  />
-                </div>
-              ))}
+              {sortedPosts.map((post, index) => {
+                // حماية إضافية: لا تمرر post إذا كان التاريخ أو profiles غير صالحين
+                let dateObj = null;
+                try {
+                  dateObj = new Date(post.created_at);
+                } catch (e) {
+                  // eslint-disable-next-line no-console
+                  console.warn('post.created_at غير قابل للتحويل لتاريخ:', post.created_at, post);
+                  return (
+                    <div key={post.id} className="p-4 bg-destructive/10 rounded text-destructive">
+                      منشور غير صالح أو ناقص البيانات (id: {post.id})
+                    </div>
+                  );
+                }
+                if (!post.profiles || !post.created_at || isNaN(dateObj.getTime())) {
+                  // eslint-disable-next-line no-console
+                  console.warn('post غير صالح (profiles أو التاريخ):', post);
+                  return (
+                    <div key={post.id} className="p-4 bg-destructive/10 rounded text-destructive">
+                      منشور غير صالح أو ناقص البيانات (id: {post.id})
+                    </div>
+                  );
+                }
+                let timestampText = '';
+                try {
+                  timestampText = formatDistanceToNow(dateObj, { addSuffix: true });
+                } catch (e) {
+                  // eslint-disable-next-line no-console
+                  console.warn('formatDistanceToNow فشل:', post.created_at, post);
+                  timestampText = 'تاريخ غير معروف';
+                }
+                return (
+                  <div 
+                    key={post.id} 
+                    className="animate-slide-up md:rounded-2xl md:overflow-hidden md:border md:border-border/30 md:bg-card/50 md:backdrop-blur-sm"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <PostCard
+                      id={post.id}
+                      userId={post.user_id}
+                      user={{
+                        name: post.profiles.full_name || post.profiles.username,
+                        username: post.profiles.username,
+                        avatar: post.profiles.avatar_url || undefined,
+                        isVerified: isVerifiedUser(post.profiles.username),
+                      }}
+                      image={post.image_url || undefined}
+                      caption={post.content}
+                      likes={post.likes_count || 0}
+                      comments={post.comments_count || 0}
+                      timestamp={timestampText}
+                      isLiked={post.is_liked}
+                      isSaved={post.is_saved}
+                    />
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div className="flex items-center justify-center py-20 px-4">

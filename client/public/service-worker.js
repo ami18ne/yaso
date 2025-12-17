@@ -57,7 +57,9 @@ self.addEventListener('fetch', (event) => {
     request.destination === 'image' ||
     request.destination === 'font' ||
     request.destination === 'style'
-  ) {
+      cache.put(request, response.clone())
+      // Keep runtime cache size reasonable
+      cleanCache(cacheName, 120)
     event.respondWith(cacheFirstStrategy(request, RUNTIME_CACHE))
     return
   }
@@ -67,6 +69,22 @@ self.addEventListener('fetch', (event) => {
 })
 
 /**
+
+// Simple cache size limiter: remove oldest entries when limit exceeded
+async function cleanCache(cacheName, maxEntries = 60) {
+  try {
+    const cache = await caches.open(cacheName)
+    const requests = await cache.keys()
+    if (requests.length > maxEntries) {
+      const removeCount = requests.length - maxEntries
+      for (let i = 0; i < removeCount; i++) {
+        await cache.delete(requests[i])
+      }
+    }
+  } catch (err) {
+    console.warn('Cache cleanup failed', err)
+  }
+}
  * Network first strategy - try network, fall back to cache
  */
 async function networkFirstStrategy(request, cacheName) {
@@ -74,7 +92,9 @@ async function networkFirstStrategy(request, cacheName) {
     const response = await fetch(request)
     if (response.ok) {
       const cache = await caches.open(cacheName)
-      cache.put(request, response.clone())
+        cache.put(request, response.clone())
+        // Keep runtime cache size reasonable
+        cleanCache(cacheName, 60)
     }
     return response
   } catch (error) {
@@ -103,7 +123,9 @@ async function cacheFirstStrategy(request, cacheName) {
     const response = await fetch(request)
     if (response.ok) {
       const cache = await caches.open(cacheName)
-      cache.put(request, response.clone())
+        cache.put(request, response.clone())
+        // Keep runtime cache size reasonable
+        cleanCache(cacheName, 120)
     }
     return response
   } catch (error) {

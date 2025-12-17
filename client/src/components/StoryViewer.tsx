@@ -105,7 +105,15 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
             <div className="text-white">
               <p className="font-semibold text-sm">{currentStory.profiles.username}</p>
               <p className="text-xs opacity-80">
-                {formatDistanceToNow(new Date(currentStory.created_at), { addSuffix: true })}
+                {(() => {
+                  try {
+                    const d = new Date(currentStory.created_at);
+                    if (!currentStory.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف';
+                    return formatDistanceToNow(d, { addSuffix: true });
+                  } catch {
+                    return 'تاريخ غير معروف';
+                  }
+                })()}
               </p>
             </div>
           </div>
@@ -124,6 +132,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
           {currentStory.media_type === 'image' ? (
             <img
               src={currentStory.media_url}
+              loading="eager"
               alt="Story"
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
@@ -134,6 +143,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
           ) : (
             <video
               src={currentStory.media_url}
+              preload="metadata"
               className="max-w-full max-h-full object-contain"
               autoPlay
               muted

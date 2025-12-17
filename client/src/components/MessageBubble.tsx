@@ -1,7 +1,8 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useRef } from "react";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Heart } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface MessageBubbleProps {
@@ -17,6 +18,7 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({
+  id,
   text,
   timestamp,
   isSent,
@@ -26,6 +28,7 @@ export default function MessageBubble({
   imageUrl,
   audioUrl,
 }: MessageBubbleProps) {
+  const { user } = useAuth();
   const { isRTL } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
   const [audioDuration, setAudioDuration] = useState(0);
@@ -59,6 +62,18 @@ export default function MessageBubble({
     setIsPlaying(false);
     setAudioProgress(0);
   };
+
+  const handleToggleReaction = async (reaction = 'heart') => {
+    try {
+      await fetch(`/api/messages/${id}/react`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user?.id, reaction }),
+      })
+    } catch (err) {
+      console.error('Failed to toggle reaction', err)
+    }
+  }
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -101,6 +116,7 @@ export default function MessageBubble({
             <div className="w-full">
               <img 
                 src={imageUrl} 
+                loading="lazy"
                 alt="Shared image" 
                 className="w-full max-w-[280px] rounded-t-2xl object-cover cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => window.open(imageUrl, '_blank')}
@@ -113,6 +129,7 @@ export default function MessageBubble({
               <audio
                 ref={audioRef}
                 src={audioUrl}
+                preload="metadata"
                 onTimeUpdate={handleAudioTimeUpdate}
                 onLoadedMetadata={handleAudioLoadedMetadata}
                 onEnded={handleAudioEnded}
@@ -168,6 +185,9 @@ export default function MessageBubble({
               {isRead ? "✓✓" : "✓"}
             </span>
           )}
+          <button onClick={() => handleToggleReaction('heart')} className="ml-2 text-muted-foreground hover:text-red-500">
+            <Heart className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>

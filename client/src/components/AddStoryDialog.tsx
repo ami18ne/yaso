@@ -165,9 +165,9 @@ export default function AddStoryDialog({ open, onOpenChange }: AddStoryDialogPro
                 <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={2} />
               </button>
               {mediaType === 'image' ? (
-                <img src={previewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+                <img src={previewUrl} loading="eager" alt="Preview" className="max-w-full max-h-full object-contain" />
               ) : (
-                <video src={previewUrl} className="max-w-full max-h-full object-contain" controls />
+                <video src={previewUrl} preload="metadata" className="max-w-full max-h-full object-contain" controls />
               )}
             </div>
           ) : (

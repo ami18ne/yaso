@@ -115,6 +115,7 @@ export default function ImageLightbox({ src, alt, isOpen, onClose }: ImageLightb
         )}
         <img
           src={src}
+          loading="eager"
           alt={alt || "Image"}
           className={cn(
             "max-w-full max-h-[90vh] object-contain transition-all duration-300 select-none",
@@ -145,11 +146,11 @@ export function ClickableImage({ src, alt, className, containerClassName }: Clic
 
   return (
     <>
-      <div 
+        <div 
         className={cn("cursor-zoom-in", containerClassName)}
         onClick={() => setIsOpen(true)}
       >
-        <img src={src} alt={alt} className={className} />
+        <img src={src} loading="lazy" alt={alt} className={className} />
       </div>
       <ImageLightbox
         src={src}
