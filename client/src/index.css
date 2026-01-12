@@ -8,45 +8,51 @@
   --opaque-button-border-intensity: -8;
   --elevate-1: rgba(0,0,0, .03);
   --elevate-2: rgba(0,0,0, .08);
-  --background: 0 0% 100%;
-  --foreground: 0 0% 8%;
-  --border: 0 0% 91%;
-  --card: 0 0% 98%;
-  --card-foreground: 0 0% 8%;
-  --card-border: 0 0% 95%;
-  --sidebar: 0 0% 96%;
-  --sidebar-foreground: 0 0% 8%;
-  --sidebar-border: 0 0% 93%;
-  --sidebar-primary: 270 85% 42%;
-  --sidebar-primary-foreground: 270 85% 98%;
-  --sidebar-accent: 270 12% 92%;
-  --sidebar-accent-foreground: 270 12% 12%;
-  --sidebar-ring: 270 85% 42%;
-  --popover: 0 0% 94%;
-  --popover-foreground: 0 0% 8%;
-  --popover-border: 0 0% 91%;
-  /* Blue Violet (#8A2BE2) */
-  --primary: 271 76% 53%;
+  /* Core colors */
+  --background: 0 0% 7%; /* #121212 */
+  --foreground: 0 0% 100%; /* #FFFFFF */
+  --border: 0 0% 100%; /* use with alpha */
+  --card: 0 0% 12%; /* #1E1E1E */
+  --card-foreground: 0 0% 100%;
+  --card-border: 0 0% 18%;
+  --sidebar: 0 0% 6%;
+  --sidebar-foreground: 0 0% 100%;
+  --sidebar-border: 0 0% 18%;
+  --sidebar-primary: 24 100% 50%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 24 100% 50%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-ring: 24 100% 50%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 100%;
+  --popover-border: 0 0% 18%;
+  /* Accent: #FF6B00 */
+  --primary: 24 100% 50%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 270 6% 90%;
-  --secondary-foreground: 270 6% 10%;
-  --muted: 270 5% 92%;
-  --muted-foreground: 270 5% 38%;
-  --accent: 270 8% 94%;
-  --accent-foreground: 270 8% 10%;
+  --primary-hover: 24 100% 58%; /* ~#FF8126 */
+  --secondary: 280 20% 16%;
+  --secondary-foreground: 280 100% 92%;
+  --muted: 0 0% 69%; /* #B0B0B0 */
+  --muted-foreground: 0 0% 69%;
+  --accent: 24 100% 50%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 50%;
   --destructive-foreground: 0 84% 98%;
   --input: 0 0% 75%;
-  --ring: 270 85% 55%;
-  --chart-1: 270 70% 35%;
+  --ring: 24 100% 50%;
+  --chart-1: 24 100% 45%;
   --chart-2: 285 65% 40%;
   --chart-3: 255 60% 45%;
   --chart-4: 300 55% 38%;
   --chart-5: 240 65% 42%;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  --font-sans: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'SF Mono', Menlo, monospace;
   --radius: 1rem;
+  --card-radius: 16px;
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 80px;
+  --card-shadow: 0 10px 30px rgba(0,0,0,0.4);
   --shadow-2xs: 0px 2px 0px 0px hsl(270 10% 10% / 0.02);
   --shadow-xs: 0px 2px 0px 0px hsl(270 10% 10% / 0.03);
   --shadow-sm: 0px 2px 0px 0px hsl(270 10% 10% / 0.04), 0px 1px 2px -1px hsl(270 10% 10% / 0.06);
@@ -72,13 +78,14 @@
   --opaque-button-border-intensity: 9;
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
-  --background: 260 25% 4%;
+  /* App strict dark palette */
+  --background: 0 0% 7%; /* ~#121212 */
   --foreground: 0 0% 98%;
   --border: 270 20% 18%;
-  --card: 260 20% 7%;
+  --card: 0 0% 12%; /* ~#1E1E1E surface */
   --card-foreground: 0 0% 98%;
-  --card-border: 270 25% 15%;
-  --sidebar: 260 25% 5%;
+  --card-border: 0 0% 18%;
+  --sidebar: 0 0% 6%;
   --sidebar-foreground: 0 0% 98%;
   --sidebar-border: 270 25% 15%;
   --sidebar-primary: 271 100% 68%;
@@ -89,14 +96,17 @@
   --popover: 260 20% 9%;
   --popover-foreground: 0 0% 98%;
   --popover-border: 270 25% 18%;
-  --primary: 271 100% 60%;
+  /* Accent uses strict orange (#FF6B00) */
+  --primary: 24 100% 50%;
   --primary-foreground: 0 0% 100%;
+  --primary-hover: 24 100% 58%;
   --secondary: 280 20% 16%;
   --secondary-foreground: 280 100% 92%;
   --muted: 270 15% 20%;
   --muted-foreground: 270 8% 65%;
-  --accent: 280 20% 16%;
-  --accent-foreground: 280 100% 88%;
+  --accent: 29 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --accent-hover: 24 100% 58%;
   --destructive: 0 75% 55%;
   --destructive-foreground: 0 84% 98%;
   --input: 270 20% 22%;
@@ -187,17 +197,24 @@
 
 @layer utilities {
   .glass {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06); /* subtle semi-transparent */
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .glass-strong {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .glass-sidebar {
+    background: rgba(30,30,30,0.65);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-right: 1px solid rgba(255,255,255,0.08);
   }
 
   .gradient-primary {

@@ -155,8 +155,8 @@ export default function PostCard({
   };
 
   return (
-    <article className="w-full bg-card/50 backdrop-blur-sm border-b border-border/30 animate-fade-in" data-testid="post-card">
-      <div className="px-4 py-3 flex items-center justify-between">
+    <article className="w-full animate-fade-in py-6" data-testid="post-card">
+      <div className="px-4 py-0 flex items-center justify-between">
         <button 
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           onClick={() => setLocation(`/profile/${user.username}`)}
@@ -197,8 +197,9 @@ export default function PostCard({
       {image ? (
         <DoubleTapLike onDoubleTap={handleDoubleTapLike} disabled={!currentUser}>
           <div 
-            className="relative w-full aspect-square bg-muted/30 overflow-hidden cursor-zoom-in rounded-lg hover-lift"
+            className="relative w-full aspect-square overflow-hidden cursor-zoom-in rounded-lg hover-lift"
             onClick={() => setLightboxOpen(true)}
+            style={{ background: 'transparent' }}
           >
             <OptimizedImage
               src={image}
@@ -292,6 +293,9 @@ export default function PostCard({
             </button>
           )}
         </div>
+      </div>
+
+      <div className="h-[1px] bg-[rgba(255,255,255,0.03)] my-6" />
       </div>
 
       <ShareDialog
