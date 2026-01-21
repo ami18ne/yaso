@@ -1,5 +1,5 @@
 // Service Worker for offline support and performance optimization
-const CACHE_NAME = 'buzly-v1'
+const CACHE_NAME = 'tinar-v1'
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -7,8 +7,8 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ]
 
-const RUNTIME_CACHE = 'buzly-runtime'
-const API_CACHE = 'buzly-api'
+const RUNTIME_CACHE = 'tinar-runtime'
+const API_CACHE = 'tinar-api'
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {

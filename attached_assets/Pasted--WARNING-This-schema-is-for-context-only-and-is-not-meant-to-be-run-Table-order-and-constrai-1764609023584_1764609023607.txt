@@ -108,6 +108,16 @@ CREATE TABLE public.posts (
   CONSTRAINT posts_pkey PRIMARY KEY (id),
   CONSTRAINT posts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
 );
+CREATE TABLE public.post_reactions (
+  id uuid NOT NULL DEFAULT uuid_generate_v4(),
+  post_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  reaction varchar(50) NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT post_reactions_pkey PRIMARY KEY (id),
+  CONSTRAINT post_reactions_post_id_fkey FOREIGN KEY (post_id) REFERENCES public.posts(id),
+  CONSTRAINT post_reactions_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.profiles(id)
+);
 CREATE TABLE public.profiles (
   id uuid NOT NULL,
   username text NOT NULL UNIQUE,

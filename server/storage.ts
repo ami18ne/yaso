@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Message, type Community, type CommunityMember, type Channel, type ChannelMessage, type MessageReaction, type LiveSession } from "@shared/schema";
+import { type User, type InsertUser, type Message, type Community, type CommunityMember, type Channel, type ChannelMessage, type MessageReaction, type LiveSession, type Post, type PostReaction } from "@shared/schema";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { encrypt, decrypt, isEncrypted } from "./lib/encryption";
 
@@ -18,6 +18,7 @@ export interface IStorage {
   getChannelsForCommunity(communityId: string): Promise<Channel[]>;
   sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage>;
   getChannelMessages(channelId: string): Promise<ChannelMessage[]>;
+  getCommunityMembers(communityId: string): Promise<any[]>;
   // Message reactions and status
   setMessageRead(messageId: string): Promise<void>;
   toggleMessageReaction(messageId: string, userId: string, reaction: string, isChannelMessage?: boolean): Promise<MessageReaction | null>;
@@ -25,6 +26,11 @@ export interface IStorage {
   endLiveSession(sessionId: string): Promise<void>;
   // Search
   searchPublicCommunities(q?: string, page?: number, pageSize?: number): Promise<Community[]>;
+  // Posts
+  getPosts(userId?: string, limit?: number): Promise<Post[]>;
+  createPost(userId: string, content: string, imageUrl?: string): Promise<Post>;
+  togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null>;
+  getPostReactions(postId: string): Promise<PostReaction[]>;
 }
 
 // Initialize Supabase client with service role key
@@ -378,6 +384,25 @@ export class SupabaseStorage implements IStorage {
     }
   }
 
+  async getCommunityMembers(communityId: string): Promise<any[]> {
+    try {
+      const client = this.checkSupabase();
+      const { data, error } = await client
+        .from('community_members')
+        .select('*, profiles(username, full_name, avatar_url)')
+        .eq('community_id', communityId)
+        .order('joined_at', { ascending: true });
+      if (error) {
+        console.error('Error fetching community members:', error);
+        return [];
+      }
+      return data || [];
+    } catch (error) {
+      console.error('Error in getCommunityMembers:', error);
+      return [];
+    }
+  }
+
   async sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage> {
     try {
       const client = this.checkSupabase();
@@ -400,14 +425,14 @@ export class SupabaseStorage implements IStorage {
       const client = this.checkSupabase();
       const { data, error } = await client
         .from('channel_messages')
-        .select('*')
+        .select('*, profiles(username, full_name, avatar_url)')
         .eq('channel_id', channelId)
         .order('created_at', { ascending: true });
       if (error) {
         console.error('Error fetching channel messages:', error);
         return [];
       }
-      const messages = (data as ChannelMessage[]).map(msg => ({
+      const messages = (data as any[]).map(msg => ({
         ...msg,
         content: isEncrypted(msg.content) ? decrypt(msg.content) : msg.content
       }));
@@ -512,6 +537,140 @@ export class SupabaseStorage implements IStorage {
       if (error) throw error;
     } catch (error) {
       console.error('Error in endLiveSession:', error);
+      throw error;
+    }
+  }
+
+  // Posts methods
+  async getPosts(userId?: string, limit = 50): Promise<Post[]> {
+    try {
+      const client = this.checkSupabase();
+      let query = client
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (userId) {
+        query = query.eq('user_id', userId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        // If table doesn't exist, return empty array
+        if (error.message && error.message.includes('relation "public.posts" does not exist')) {
+          console.log('Posts table does not exist yet, returning empty array');
+          return [];
+        }
+        throw error;
+      }
+      return data as Post[];
+    } catch (error) {
+      console.error('Error in getPosts:', error);
+      // If it's a table not found error, return empty array
+      if (error.message && error.message.includes('does not exist')) {
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  async createPost(userId: string, content: string, imageUrl?: string): Promise<Post> {
+    try {
+      const client = this.checkSupabase();
+      const { data, error } = await client
+        .from('posts')
+        .insert([{ user_id: userId, content, image_url: imageUrl }])
+        .select()
+        .single();
+      if (error) {
+        // If table doesn't exist, throw a more helpful error
+        if (error.message && error.message.includes('relation "public.posts" does not exist')) {
+          throw new Error('Posts table does not exist. Please create the posts table in your database first.');
+        }
+        throw error;
+      }
+      return data as Post;
+    } catch (error) {
+      console.error('Error in createPost:', error);
+      throw error;
+    }
+  }
+
+  async togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null> {
+    try {
+      const client = this.checkSupabase();
+
+      // Check if reaction already exists
+      const { data: existing, error: fetchError } = await client
+        .from('post_reactions')
+        .select('*')
+        .eq('post_id', postId)
+        .eq('user_id', userId)
+        .eq('reaction', reaction)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows returned
+        // If table doesn't exist, throw helpful error
+        if (fetchError.message && fetchError.message.includes('relation "public.post_reactions" does not exist')) {
+          throw new Error('Post reactions table does not exist. Please create the post_reactions table in your database first.');
+        }
+        throw fetchError;
+      }
+
+      if (existing) {
+        // Remove existing reaction
+        const { error: deleteError } = await client
+          .from('post_reactions')
+          .delete()
+          .eq('id', existing.id);
+        if (deleteError) throw deleteError;
+        return null;
+      } else {
+        // Add new reaction
+        const { data, error } = await client
+          .from('post_reactions')
+          .insert([{ post_id: postId, user_id: userId, reaction }])
+          .select()
+          .single();
+        if (error) {
+          // If table doesn't exist, throw helpful error
+          if (error.message && error.message.includes('relation "public.post_reactions" does not exist')) {
+            throw new Error('Post reactions table does not exist. Please create the post_reactions table in your database first.');
+          }
+          throw error;
+        }
+        return data as PostReaction;
+      }
+    } catch (error) {
+      console.error('Error in togglePostReaction:', error);
+      throw error;
+    }
+  }
+
+  async getPostReactions(postId: string): Promise<PostReaction[]> {
+    try {
+      const client = this.checkSupabase();
+      const { data, error } = await client
+        .from('post_reactions')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: false });
+      if (error) {
+        // If table doesn't exist, return empty array
+        if (error.message && error.message.includes('relation "public.post_reactions" does not exist')) {
+          console.log('Post reactions table does not exist yet, returning empty array');
+          return [];
+        }
+        throw error;
+      }
+      return data as PostReaction[];
+    } catch (error) {
+      console.error('Error in getPostReactions:', error);
+      // If it's a table not found error, return empty array
+      if (error.message && error.message.includes('does not exist')) {
+        return [];
+      }
       throw error;
     }
   }

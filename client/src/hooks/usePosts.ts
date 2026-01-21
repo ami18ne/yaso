@@ -36,7 +36,13 @@ export function usePosts() {
         `)
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        // If table doesn't exist, return empty array
+        if (error.message && error.message.includes('does not exist')) {
+          return [];
+        }
+        throw error
+      }
 
       if (user) {
         const { data: likes } = await supabase
@@ -323,6 +329,74 @@ export function useUpdatePost() {
     },
     onError: (error: Error) => {
       toast({ title: 'Error updating post', description: error.message, variant: 'destructive' })
+    },
+  })
+}
+
+export function usePostReactions(postId: string) {
+  return useQuery({
+    queryKey: ['post-reactions', postId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('post_reactions')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        // If table doesn't exist, return empty array
+        if (error.message && error.message.includes('does not exist')) {
+          return [];
+        }
+        throw error
+      }
+      return data
+    },
+    enabled: !!postId,
+  })
+}
+
+export function useTogglePostReaction() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async ({ postId, reaction }: { postId: string; reaction: string }) => {
+      try {
+        if (!user) throw new Error('Must be logged in to react to posts')
+
+        const response = await fetch(`/api/posts/${postId}/reactions`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.id,
+            reaction,
+          }),
+        })
+
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || 'Failed to toggle reaction')
+        }
+
+        return await response.json()
+      } catch (error) {
+        logger.error('Error in useTogglePostReaction:', error)
+        throw error instanceof Error ? error : new Error('An unexpected error occurred while toggling reaction')
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error',
+        description: error.message,
+        variant: 'destructive',
+      })
     },
   })
 }

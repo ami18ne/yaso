@@ -6,7 +6,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfiles";
 import { useRTL } from "@/hooks/useRTL";
-import buzlyLogo from "@assets/buzly_1764443414587.png";
+import tinarLogo from "@assets/tinar_logo.png";
 import { cn } from "@/lib/utils";
 
 export default function TopBar() {
@@ -22,13 +22,13 @@ export default function TopBar() {
           <Link href="/home">
             <div className={`flex items-center gap-2 cursor-pointer group ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <img 
-                src={buzlyLogo} 
+                src={tinarLogo} 
                 loading="eager"
-                alt="Buzly" 
+                alt="Tinar" 
                 className="h-8 w-8 md:h-9 md:w-9 object-contain transition-transform group-hover:scale-110"
               />
               <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-primary via-purple-400 to-pink-500 bg-clip-text text-transparent hidden sm:inline">
-                Buzly
+                Tinar
               </span>
             </div>
           </Link>

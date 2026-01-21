@@ -183,4 +183,15 @@ export function useSendChannelMessage() {
   })
 }
 
-export default useCommunities
+export function useCommunityMembers(communityId?: string) {
+  return useQuery({
+    queryKey: ['community-members', communityId],
+    queryFn: async () => {
+      if (!communityId) return []
+      const res = await fetch(`/api/communities/${communityId}/members`)
+      if (!res.ok) throw new Error('Failed to fetch community members')
+      return res.json()
+    },
+    enabled: !!communityId,
+  })
+}

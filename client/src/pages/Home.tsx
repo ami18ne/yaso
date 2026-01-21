@@ -1,17 +1,13 @@
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import PostCard from "@/components/PostCard";
 import { usePosts } from "@/hooks/usePosts";
 import { formatDistanceToNow } from "date-fns";
-import { Loader2, ImageOff, Clock, TrendingUp } from "lucide-react";
+import { Loader2, ImageOff } from "lucide-react";
 import { isVerifiedUser } from "@/lib/verifiedUsers";
-
-type SortType = 'recent' | 'popular';
 
 export default function Home() {
   const { data: posts, isLoading, error } = usePosts();
-  const [sortBy, setSortBy] = useState<SortType>('recent');
 
   const sortedPosts = useMemo(() => {
     if (!posts) return [];
@@ -19,14 +15,9 @@ export default function Home() {
     return [...posts]
       .filter(p => p.created_at && !isNaN(new Date(p.created_at).getTime()))
       .sort((a, b) => {
-        if (sortBy === 'popular') {
-          const aScore = (a.likes_count || 0) + (a.comments_count || 0) * 2;
-          const bScore = (b.likes_count || 0) + (b.comments_count || 0) * 2;
-          return bScore - aScore;
-        }
         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
       });
-  }, [posts, sortBy]);
+  }, [posts]);
 
   if (isLoading) {
     return (
@@ -57,28 +48,6 @@ export default function Home() {
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full">
         <div className="w-full max-w-2xl mx-auto pb-24 md:pb-8">
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border/50 px-4 py-3">
-            <div className="flex items-center gap-2">
-              <Button
-                variant={sortBy === 'recent' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-full gap-1.5"
-                onClick={() => setSortBy('recent')}
-              >
-                <Clock className="h-4 w-4" />
-                Recent
-              </Button>
-              <Button
-                variant={sortBy === 'popular' ? 'default' : 'ghost'}
-                size="sm"
-                className="rounded-full gap-1.5"
-                onClick={() => setSortBy('popular')}
-              >
-                <TrendingUp className="h-4 w-4" />
-                Popular
-              </Button>
-            </div>
-          </div>
 
           {sortedPosts && sortedPosts.length > 0 ? (
             <div className="space-y-4 md:space-y-6 md:p-4">

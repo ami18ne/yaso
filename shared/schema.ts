@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, boolean, timestamp, integer, foreignKey } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -101,10 +101,32 @@ export const liveSessions = pgTable("live_sessions", {
   ended_at: timestamp("ended_at"),
 });
 
+// Posts and reactions
+export const posts = pgTable("posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  user_id: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  image_url: text("image_url"),
+  likes_count: integer("likes_count").default(0),
+  comments_count: integer("comments_count").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+});
+
+export const postReactions = pgTable("post_reactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  post_id: varchar("post_id").notNull().references(() => posts.id),
+  user_id: varchar("user_id").notNull().references(() => users.id),
+  reaction: varchar("reaction", { length: 50 }).notNull(),
+  created_at: timestamp("created_at").defaultNow(),
+});
+
 export type LiveSession = typeof liveSessions.$inferSelect;
 export type Community = typeof communities.$inferSelect;
 export type CommunityMember = typeof communityMembers.$inferSelect;
 export type Channel = typeof channels.$inferSelect;
 export type ChannelMessage = typeof channelMessages.$inferSelect;
 export type MessageReaction = typeof messageReactions.$inferSelect;
+export type Post = typeof posts.$inferSelect;
+export type PostReaction = typeof postReactions.$inferSelect;
 

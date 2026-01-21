@@ -1,7 +1,7 @@
 {
-  "name": "buzly - Connect & Share",
-  "short_name": "buzly",
-  "description": "A modern social platform combining messaging, video sharing, and community features",
+  "name": "tinar - Connect & Share",
+  "short_name": "tinar",
+  "description": "Your space to be you. Connect with millions of creators and thinkers.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

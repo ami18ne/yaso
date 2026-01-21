@@ -187,13 +187,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/communities/:id/channels', async (req, res) => {
+  app.get('/api/communities/:id/members', async (req, res) => {
     try {
-      const channels = await storage.getChannelsForCommunity(req.params.id);
-      res.json(channels);
+      const members = await storage.getCommunityMembers(req.params.id);
+      res.json(members);
     } catch (error) {
-      console.error('Error fetching channels:', error);
-      res.status(500).json({ error: 'Failed to fetch channels' });
+      console.error('Error fetching community members:', error);
+      res.status(500).json({ error: 'Failed to fetch community members' });
+    }
+  });
+
+  // Posts routes
+  app.get('/api/posts', async (req, res) => {
+    try {
+      const userId = req.query.userId as string;
+      const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
+      const posts = await storage.getPosts(userId, limit);
+      res.json(posts);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+      res.status(500).json({ error: 'Failed to fetch posts' });
+    }
+  });
+
+  app.post('/api/posts', async (req, res) => {
+    try {
+      const { userId, content, imageUrl } = req.body;
+      if (!userId || !content) return res.status(400).json({ error: 'Missing required fields' });
+      const post = await storage.createPost(userId, content, imageUrl);
+      res.json(post);
+    } catch (error) {
+      console.error('Error creating post:', error);
+      res.status(500).json({ error: 'Failed to create post' });
+    }
+  });
+
+  app.post('/api/posts/:id/reactions', async (req, res) => {
+    try {
+      const { userId, reaction } = req.body;
+      if (!userId || !reaction) return res.status(400).json({ error: 'Missing required fields' });
+      const result = await storage.togglePostReaction(req.params.id, userId, reaction);
+      res.json({ success: true, reaction: result });
+    } catch (error) {
+      console.error('Error toggling post reaction:', error);
+      res.status(500).json({ error: 'Failed to toggle reaction' });
+    }
+  });
+
+  app.get('/api/posts/:id/reactions', async (req, res) => {
+    try {
+      const reactions = await storage.getPostReactions(req.params.id);
+      res.json(reactions);
+    } catch (error) {
+      console.error('Error fetching post reactions:', error);
+      res.status(500).json({ error: 'Failed to fetch reactions' });
     }
   });
 

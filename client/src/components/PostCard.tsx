@@ -2,11 +2,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLikePost, useSavePost } from "@/hooks/usePosts";
+import { useLikePost, useSavePost, useTogglePostReaction, usePostReactions } from "@/hooks/usePosts";
 import { useComments, useAddComment } from "@/hooks/useComments";
 import ShareDialog from "./ShareDialog";
 import CommentsDialog from "./CommentsDialog";
 import PostOptionsMenu from "./PostOptionsMenu";
+import OptimizedImage from "./OptimizedImage";
 import ImageLightbox from "./ImageLightbox";
 import UserAvatar from "./UserAvatar";
 import VerifiedBadge from "./VerifiedBadge";
@@ -15,7 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import EditPostDialog from './EditPostDialog';
-import OptimizedImage from './OptimizedImage';
+import ReactionPicker from "./ReactionPicker";
 interface PostCardProps {
   id: string;
   userId: string;
@@ -45,6 +46,7 @@ export default function PostCard({
   timestamp,
   isLiked = false,
   isSaved = false,
+  reactions = [],
 }: PostCardProps) {
   const [liked, setLiked] = useState(isLiked);
   const [saved, setSaved] = useState(isSaved);
@@ -55,12 +57,15 @@ export default function PostCard({
   const [commentsDialogOpen, setCommentsDialogOpen] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
   const likePostMutation = useLikePost();
   const savePostMutation = useSavePost();
+  const toggleReactionMutation = useTogglePostReaction();
   const { user: currentUser } = useAuth();
   const { toast } = useToast();
   const { data: commentsData = [] } = useComments(id);
   const addCommentMutation = useAddComment();
+  const { data: postReactions = [] } = usePostReactions(id);
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -154,6 +159,28 @@ export default function PostCard({
     await addCommentMutation.mutateAsync({ postId: id, content });
   };
 
+  const handleReaction = async (reaction: string) => {
+    if (!currentUser) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to react to posts",
+        variant: "destructive",
+      });
+      setLocation('/auth');
+      return;
+    }
+
+    try {
+      await toggleReactionMutation.mutateAsync({ postId: id, reaction });
+      toast({
+        title: "Reaction added!",
+        description: `You reacted with ${reaction}`,
+      });
+    } catch (error) {
+      console.error('Error adding reaction:', error);
+    }
+  };
+
   return (
     <article className="w-full animate-fade-in py-6" data-testid="post-card">
       <div className="px-4 py-0 flex items-center justify-between">
@@ -236,12 +263,11 @@ export default function PostCard({
               />
             </button>
             <button
-              className="group transition-transform active:scale-90"
-              onClick={() => setCommentsDialogOpen(true)}
-              data-testid="button-comment-post"
-              aria-label="Comments"
+              className="group transition-transform active:scale-90 relative"
+              onClick={() => setReactionPickerOpen(true)}
+              aria-label="Add reaction"
             >
-              <MessageCircle className="h-6 w-6 transition-colors group-hover:text-primary" />
+              <span className="text-lg group-hover:scale-110 transition-transform">😊</span>
             </button>
             <button
               className="group transition-transform active:scale-90"
@@ -272,6 +298,34 @@ export default function PostCard({
 
         <div className="space-y-1.5">
           <p className="font-semibold text-sm">{likes.toLocaleString()} likes</p>
+          
+          {postReactions.length > 0 && (
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-1">
+                {Object.entries(
+                  postReactions.reduce((acc, reaction) => {
+                    acc[reaction.reaction] = (acc[reaction.reaction] || 0) + 1;
+                    return acc;
+                  }, {} as Record<string, number>)
+                )
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 3)
+                  .map(([emoji, count]) => (
+                    <div
+                      key={emoji}
+                      className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center text-xs border border-border/30"
+                      title={`${count} ${emoji}`}
+                    >
+                      {emoji}
+                    </div>
+                  ))}
+              </div>
+              <span className="text-xs text-muted-foreground">
+                {postReactions.length} reaction{postReactions.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+          )}
+          
           {image && caption && (
             <p className="text-sm leading-relaxed">
               <button
@@ -296,7 +350,6 @@ export default function PostCard({
       </div>
 
       <div className="h-[1px] bg-[rgba(255,255,255,0.03)] my-6" />
-      </div>
 
       <ShareDialog
         open={shareDialogOpen}
@@ -345,6 +398,12 @@ export default function PostCard({
         postId={id}
         initialContent={caption}
         initialImage={image}
+      />
+
+      <ReactionPicker
+        isOpen={reactionPickerOpen}
+        onReaction={handleReaction}
+        onClose={() => setReactionPickerOpen(false)}
       />
     </article>
   );

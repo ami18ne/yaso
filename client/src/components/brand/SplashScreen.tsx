@@ -78,8 +78,8 @@ export default function SplashScreen({
               transition={{ delay: 0.6, duration: 0.5 }}
               className="text-center"
             >
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-violet-400 to-fuchsia-400 bg-clip-text text-transparent">
-                Buzly
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                Tinar
               </h1>
               <motion.p
                 initial={{ opacity: 0 }}
@@ -87,7 +87,7 @@ export default function SplashScreen({
                 transition={{ delay: 1, duration: 0.5 }}
                 className="mt-2 text-muted-foreground"
               >
-                Connect. Share. Buzz.
+                Your space to be you.
               </motion.p>
             </motion.div>
             

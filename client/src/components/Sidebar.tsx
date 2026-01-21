@@ -1,9 +1,15 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { Home, Video, Users, MessageCircle, Bell, ChevronLeft, ChevronRight } from "lucide-react";
+import { Home, Video, Users, MessageCircle, Bell, ChevronLeft, ChevronRight, PlusCircle, Search } from "lucide-react";
 import { Link } from "wouter";
 import { useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
+import { useProfile } from "@/hooks/useProfiles";
+import { useRTL } from "@/hooks/useRTL";
+import tinarLogo from "@assets/tinar_logo.png";
 
 const COLLAPSED_WIDTH = '80px';
 const EXPANDED_WIDTH = '260px';
@@ -17,6 +23,9 @@ export default function Sidebar() {
       return false;
     }
   });
+  const isRTL = useRTL();
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
 
   const applyCssWidth = useCallback((isCollapsed: boolean) => {
     const width = isCollapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH;
@@ -50,20 +59,43 @@ export default function Sidebar() {
       style={{ width: collapsed ? COLLAPSED_WIDTH : EXPANDED_WIDTH }}
     >
       <div className="flex items-center gap-2">
-        <div className={cn('h-10 w-10 rounded-lg bg-[rgba(255,255,255,0.03)] flex items-center justify-center', collapsed ? '' : 'mr-2')}>
-          B
-        </div>
-        {!collapsed && <div className="text-lg font-semibold">Buzly</div>}
+        <img 
+          src={tinarLogo} 
+          loading="eager"
+          alt="Tinar" 
+          className="h-8 w-8 object-contain"
+        />
+        {!collapsed && <span className="text-xl font-black bg-gradient-to-r from-primary via-purple-400 to-pink-500 bg-clip-text text-transparent">
+          Tinar
+        </span>}
       </div>
+
+      {!collapsed && (
+        <div className="mt-4">
+          <Link href="/search">
+            <div className={`relative group ${isRTL ? 'direction-rtl' : 'direction-ltr'}`}>
+              <Search className={`absolute h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2`} />
+              <Input
+                placeholder={isRTL ? "ابحث..." : "Search..."}
+                className={`h-8 ${isRTL ? 'pr-9 text-right' : 'pl-9 text-left'} bg-muted/50 border-transparent hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-full transition-all cursor-pointer w-full`}
+                dir={isRTL ? 'rtl' : 'ltr'}
+                readOnly
+              />
+            </div>
+          </Link>
+        </div>
+      )}
+
       <nav className="flex flex-col gap-2 mt-2">
         {(() => {
           const [location] = useLocation();
           const items = [
-            { href: '/home', icon: Home, label: 'Dashboard' },
-            { href: '/analytics', icon: Video, label: 'Analytics' },
-            { href: '/projects', icon: Users, label: 'Projects' },
-            { href: '/team', icon: MessageCircle, label: 'Team' },
-            { href: '/billing', icon: Bell, label: 'Billing' },
+            { href: '/home', icon: Home, label: 'Home' },
+            { href: '/messages', icon: MessageCircle, label: 'Messages' },
+            { href: '/communities', icon: Users, label: 'Communities' },
+            { href: '/', icon: Video, label: 'Videos' },
+            { href: '/create', icon: PlusCircle, label: 'Create' },
+            { href: '/notifications', icon: Bell, label: 'Notifications' },
           ];
 
           return items.map(({ href, icon: Icon, label }) => {
@@ -92,7 +124,14 @@ export default function Sidebar() {
       </nav>
 
       <div className="mt-auto mb-3 flex items-center gap-2">
-        <Button variant="outline" size="sm" className="w-12">+</Button>
+        <Link href="/profile">
+          <Avatar className="h-8 w-8 ring-2 ring-primary/30 hover:ring-primary/60 transition-all cursor-pointer">
+            <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.username || "Profile"} />
+            <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white text-xs font-semibold">
+              {profile?.username?.slice(0, 2).toUpperCase() || user?.email?.slice(0, 2).toUpperCase() || 'ME'}
+            </AvatarFallback>
+          </Avatar>
+        </Link>
         <Button
           variant="ghost"
           size="sm"

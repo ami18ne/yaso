@@ -34,17 +34,17 @@ export default function Logo({
     >
       <defs>
         <linearGradient id="beeMain" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#A855F7"/>
+          <stop offset="0%" stopColor="#3B82F6"/>
           <stop offset="50%" stopColor="#8B5CF6"/>
-          <stop offset="100%" stopColor="#7C3AED"/>
+          <stop offset="100%" stopColor="#EC4899"/>
         </linearGradient>
         <linearGradient id="beeBody" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#F59E0B"/>
-          <stop offset="100%" stopColor="#FBBF24"/>
+          <stop offset="0%" stopColor="#3B82F6"/>
+          <stop offset="100%" stopColor="#8B5CF6"/>
         </linearGradient>
         <linearGradient id="beeWing" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#C4B5FD" stopOpacity="0.8"/>
-          <stop offset="100%" stopColor="#A78BFA" stopOpacity="0.6"/>
+          <stop offset="0%" stopColor="#93C5FD" stopOpacity="0.8"/>
+          <stop offset="100%" stopColor="#C4B5FD" stopOpacity="0.6"/>
         </linearGradient>
       </defs>
       
@@ -56,14 +56,14 @@ export default function Logo({
       <ellipse cx="24" cy="28" rx="11" ry="13" fill="url(#beeBody)"/>
       <rect x="21" y="16" width="6" height="10" rx="3" fill="url(#beeBody)"/>
       
-      <line x1="19" y1="24" x2="29" y2="24" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="18" y1="29" x2="30" y2="29" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round"/>
-      <line x1="19" y1="34" x2="29" y2="34" stroke="#1F1F1F" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="19" y1="24" x2="29" y2="24" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="18" y1="29" x2="30" y2="29" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round"/>
+      <line x1="19" y1="34" x2="29" y2="34" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round"/>
       
-      <circle cx="21" cy="19" r="2" fill="#1F1F1F"/>
-      <circle cx="27" cy="19" r="2" fill="#1F1F1F"/>
-      <circle cx="21.5" cy="18.5" r="0.8" fill="white"/>
-      <circle cx="27.5" cy="18.5" r="0.8" fill="white"/>
+      <circle cx="21" cy="19" r="2" fill="#FFFFFF"/>
+      <circle cx="27" cy="19" r="2" fill="#FFFFFF"/>
+      <circle cx="21.5" cy="18.5" r="0.8" fill="#3B82F6"/>
+      <circle cx="27.5" cy="18.5" r="0.8" fill="#3B82F6"/>
       
       <line x1="18" y1="12" x2="16" y2="8" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
       <circle cx="15.5" cy="7" r="1.5" fill="white"/>
@@ -76,11 +76,11 @@ export default function Logo({
     <span 
       className={cn(
         sizes.text,
-        'font-bold bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent',
-        animated && 'transition-all duration-300 hover:from-amber-400 hover:via-yellow-400 hover:to-amber-500'
+        'font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent',
+        animated && 'transition-all duration-300 hover:from-blue-300 hover:via-purple-300 hover:to-pink-300'
       )}
     >
-      Buzly
+      Tinar
     </span>
   )
   

@@ -38,7 +38,7 @@ export default function ShareDialog({
 
   const shareVia = (platform: string) => {
     let url = ''
-    const text = `Check out this ${postType} on Buzly!`
+    const text = `Check out this ${postType} on Tinar!`
 
     switch (platform) {
       case 'facebook':
