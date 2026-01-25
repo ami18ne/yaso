@@ -8,6 +8,7 @@ import { useProfile } from "@/hooks/useProfiles";
 import { useRTL } from "@/hooks/useRTL";
 import tinarLogo from "@assets/tinar_logo.png";
 import { cn } from "@/lib/utils";
+import ThemeToggleButton from "./ThemeToggleButton";
 
 export default function TopBar() {
   const { user } = useAuth();
@@ -47,6 +48,7 @@ export default function TopBar() {
           </Link>
 
           <div className={`flex items-center gap-1 md:gap-1.5 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+          <ThemeToggleButton />
             <Link href="/home">
               <Button
                 size="icon"

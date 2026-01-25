@@ -29,12 +29,17 @@ import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
 import E2EHarness from "@/pages/E2EHarness";
 import NotFound from "@/pages/not-found";
+import LegalPage from "@/pages/Legal";
+import ContactPage from "@/pages/Contact";
+import FAQPage from "@/pages/FAQ";
+import AboutPage from "@/pages/About";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 function Router() {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
-  const publicPaths = ['/auth', '/forgot-password', '/verify-otp', '/reset-password'];
+  const publicPaths = ['/auth', '/forgot-password', '/verify-otp', '/reset-password', '/legal', '/contact', '/faq', '/about'];
   // Allow a dev-only E2E harness route to be reachable without authentication
   if (process.env.NODE_ENV !== 'production') {
     publicPaths.push('/__e2e__')
@@ -63,6 +68,10 @@ function Router() {
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/verify-otp" component={VerifyOTP} />
       <Route path="/reset-password" component={ResetPassword} />
+      <Route path="/legal" component={LegalPage} />
+      <Route path="/contact" component={ContactPage} />
+      <Route path="/faq" component={FAQPage} />
+      <Route path="/about" component={AboutPage} />
       
       {/* Protected routes */}
       <Route path="/" component={Videos} />
@@ -108,12 +117,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <AuthProvider>
+        <ThemeProvider>
           <TooltipProvider>
             <ErrorBoundary>
               <AppContent />
             </ErrorBoundary>
             <Toaster />
           </TooltipProvider>
+          </ThemeProvider>
         </AuthProvider>
       </LanguageProvider>
     </QueryClientProvider>

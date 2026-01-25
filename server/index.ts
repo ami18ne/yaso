@@ -105,9 +105,3 @@ app.get('/api/health', (_req, res) => {
     log(`serving on port ${port}`);
   });
 })();
-
-// Buzly Web App
-// Owner: YA SO
-// Date: 11-12-2025
-
-

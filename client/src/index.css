@@ -45,7 +45,7 @@
   --chart-3: 255 60% 45%;
   --chart-4: 300 55% 38%;
   --chart-5: 240 65% 42%;
-  --font-sans: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: 'SF Mono', Menlo, monospace;
   --radius: 1rem;
@@ -145,6 +145,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow: auto;
   }
 
   body {
@@ -154,7 +155,6 @@
     font-feature-settings: 'kern' 1, 'liga' 1, 'calt' 1;
     letter-spacing: -0.011em;
     font-optical-sizing: auto;
-    background: #000000;
   }
 
   h1, h2, h3, h4, h5, h6 {
