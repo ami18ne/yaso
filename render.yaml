@@ -3,8 +3,8 @@ services:
     name: yaso-app
     env: node
     plan: free
-    buildCommand: "npm run install:all && npm run build"
+    buildCommand: "npm install && npm run build"
     startCommand: "npm start"
     envVars:
       - key: NODE_VERSION
-        value: "20"
+        value: "22"
