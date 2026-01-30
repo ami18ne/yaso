@@ -1,31 +1,44 @@
-import React from 'react'
-import { useJoinCommunity } from '@/hooks/useCommunities'
-import { useAuth } from '@/contexts/AuthContext'
-import { useLocation } from 'wouter'
+import React from 'react';
+import { useJoinCommunity, useLeaveCommunity } from '@/hooks/useCommunities';
+import { useAuth } from '@/contexts/AuthContext';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
 
-export default function CommunityCard({ community }: { community: any }) {
-  const joinMutation = useJoinCommunity()
-  const { user } = useAuth()
-  const [, setLocation] = useLocation()
-  const [isJoining, setIsJoining] = React.useState(false)
+export default function CommunityCard({ community, isMember }: { community: any, isMember: boolean }) {
+  const joinMutation = useJoinCommunity();
+  const leaveMutation = useLeaveCommunity();
+  const { user } = useAuth();
+  const [, setLocation] = useLocation();
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
   const handleJoin = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (!user) return alert('Please sign in to join communities')
-    if (isJoining) return
-    setIsJoining(true)
+    e.preventDefault();
+    if (!user) return alert('Please sign in to join communities');
+    if (isProcessing) return;
+    setIsProcessing(true);
     try {
-      const res = await joinMutation.mutateAsync({ communityId: community.id })
-      // Redirect to community page
-      setLocation(`/communities/${community.id}`)
+      await joinMutation.mutateAsync({ communityId: community.id });
+      setLocation(`/communities/${community.id}`);
     } catch (err) {
-      console.error('Join error', err)
-      // join mutation already toasts; show fallback
-      alert(err instanceof Error ? err.message : 'Failed to join community')
+      console.error('Join error', err);
     } finally {
-      setIsJoining(false)
+      setIsProcessing(false);
     }
-  }
+  };
+
+  const handleLeave = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) return alert('Please sign in to leave communities');
+    if (isProcessing) return;
+    setIsProcessing(true);
+    try {
+      await leaveMutation.mutateAsync({ communityId: community.id });
+    } catch (err) {
+      console.error('Leave error', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 flex flex-col justify-between">
@@ -39,14 +52,25 @@ export default function CommunityCard({ community }: { community: any }) {
 
       <div className="flex items-center justify-between">
         <div className="text-xs text-muted-foreground">{community.members_count ? `${community.members_count} members` : ''}</div>
-        <button
-          onClick={handleJoin}
-          disabled={isJoining}
-          className="px-3 py-1 bg-primary text-white rounded hover:opacity-90 disabled:opacity-60 text-sm"
-        >
-          {isJoining ? 'Joining...' : 'Join'}
-        </button>
+        {isMember ? (
+          <Button
+            onClick={handleLeave}
+            disabled={isProcessing}
+            variant="outline"
+            size="sm"
+          >
+            {isProcessing ? 'Leaving...' : 'Leave'}
+          </Button>
+        ) : (
+          <Button
+            onClick={handleJoin}
+            disabled={isProcessing}
+            size="sm"
+          >
+            {isProcessing ? 'Joining...' : 'Join'}
+          </Button>
+        )}
       </div>
     </div>
-  )
+  );
 }

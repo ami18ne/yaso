@@ -20,6 +20,19 @@ declare module 'http' {
   }
 }
 
+// Helper function to parse command line arguments
+const getArg = (argName: string): string | undefined => {
+  const arg = process.argv.find(arg => arg.startsWith(`${argName}=`));
+  if (arg) {
+    return arg.split('=')[1];
+  }
+  const argIndex = process.argv.indexOf(argName);
+  if (argIndex > -1 && process.argv[argIndex + 1]) {
+    return process.argv[argIndex + 1];
+  }
+  return undefined;
+};
+
 app.set('trust proxy', 1);
 
 app.use(compressionMiddleware);
@@ -100,7 +113,8 @@ app.get('/api/health', (_req, res) => {
     serveStatic(app);
   }
 
-  const port = parseInt(process.env.PORT || '5000', 10);
+  const portArg = getArg('--port');
+  const port = parseInt(portArg || process.env.PORT || '5000', 10);
   server.listen(port, "0.0.0.0", () => {
     log(`serving on port ${port}`);
   });

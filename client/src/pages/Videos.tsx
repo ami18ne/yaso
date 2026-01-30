@@ -67,6 +67,7 @@ export default function Videos() {
 
   return (
     <>
+     <h1 className="text-2xl font-bold p-4">T-Shorts</h1>
       <div className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide bg-black">
         {videos.map((video) => (
           <VideoCard

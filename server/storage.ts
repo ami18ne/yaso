@@ -1,6 +1,14 @@
 import { type User, type InsertUser, type Message, type Community, type CommunityMember, type Channel, type ChannelMessage, type MessageReaction, type LiveSession, type Post, type PostReaction } from "@shared/schema";
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { encrypt, decrypt, isEncrypted } from "./lib/encryption";
+import { v2 as cloudinary } from 'cloudinary';
+
+// Cloudinary configuration (replace with your credentials)
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -14,11 +22,13 @@ export interface IStorage {
   getCommunity(id: string): Promise<Community | undefined>;
   listCommunitiesForUser(userId: string): Promise<Community[]>;
   joinCommunity(communityId: string, userId: string, role?: string): Promise<CommunityMember>;
+  leaveCommunity(communityId: string, userId: string): Promise<void>;
   createChannel(communityId: string, name: string, type?: string, isPrivate?: boolean): Promise<Channel>;
   getChannelsForCommunity(communityId: string): Promise<Channel[]>;
   sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage>;
   getChannelMessages(channelId: string): Promise<ChannelMessage[]>;
   getCommunityMembers(communityId: string): Promise<any[]>;
+  getUserRoleInCommunity(communityId: string, userId: string): Promise<string | null>;
   // Message reactions and status
   setMessageRead(messageId: string): Promise<void>;
   toggleMessageReaction(messageId: string, userId: string, reaction: string, isChannelMessage?: boolean): Promise<MessageReaction | null>;
@@ -31,6 +41,8 @@ export interface IStorage {
   createPost(userId: string, content: string, imageUrl?: string): Promise<Post>;
   togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null>;
   getPostReactions(postId: string): Promise<PostReaction[]>;
+  // Image transformations
+  applyCloudinaryTransformation(publicId: string, transformation: any): Promise<string>;
 }
 
 // Initialize Supabase client with service role key
@@ -327,6 +339,37 @@ export class SupabaseStorage implements IStorage {
       throw error;
     }
   }
+  
+  async leaveCommunity(communityId: string, userId: string): Promise<void> {
+    try {
+      const client = this.checkSupabase();
+      // First, check if the user is the owner
+      const { data: community, error: fetchError } = await client
+        .from('communities')
+        .select('owner_id')
+        .eq('id', communityId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      if (community && community.owner_id === userId) {
+        throw new Error('Community owner cannot leave the community.');
+      }
+
+      // If not the owner, proceed to delete the membership
+      const { error: deleteError } = await client
+        .from('community_members')
+        .delete()
+        .eq('community_id', communityId)
+        .eq('user_id', userId);
+
+      if (deleteError) throw deleteError;
+
+    } catch (error) {
+      console.error('Error in leaveCommunity:', error);
+      throw error;
+    }
+  }
 
   async searchPublicCommunities(q = '', page = 1, pageSize = 20): Promise<Community[]> {
     try {
@@ -400,6 +443,28 @@ export class SupabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error in getCommunityMembers:', error);
       return [];
+    }
+  }
+
+  async getUserRoleInCommunity(communityId: string, userId: string): Promise<string | null> {
+    try {
+      const client = this.checkSupabase();
+      const { data, error } = await client
+        .from('community_members')
+        .select('role')
+        .eq('community_id', communityId)
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        return null;
+      }
+
+      return data ? data.role : null;
+    } catch (error) {
+      console.error('Error in getUserRoleInCommunity:', error);
+      return null;
     }
   }
 
@@ -671,6 +736,15 @@ export class SupabaseStorage implements IStorage {
       if (error.message && error.message.includes('does not exist')) {
         return [];
       }
+      throw error;
+    }
+  }
+
+  async applyCloudinaryTransformation(publicId: string, transformation: any): Promise<string> {
+    try {
+      return cloudinary.url(publicId, transformation);
+    } catch (error) {
+      console.error('Error applying Cloudinary transformation:', error);
       throw error;
     }
   }

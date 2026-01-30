@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import ChatWindow from "@/components/ChatWindow";
+import VideoCall from "@/components/agora/VideoCall";
+import VoiceCall from "@/components/agora/VoiceCall";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,6 +43,8 @@ export default function Messages() {
   const [showSidebar, setShowSidebar] = useState(true);
   const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
   const [addStoryOpen, setAddStoryOpen] = useState(false);
+  const [isCalling, setIsCalling] = useState(false);
+  const [isVoiceCalling, setIsVoiceCalling] = useState(false);
   const { data: searchResults = [] } = useSearchProfiles(searchQuery);
   const { toast } = useToast();
   const getOrCreateConversationMutation = useGetOrCreateConversation();
@@ -153,6 +157,20 @@ export default function Messages() {
   }));
 
   const selectedConversationData = conversations?.find(c => c.conversation_id === selectedConversation);
+
+  const startVideoCall = () => setIsCalling(true);
+  const endVideoCall = () => setIsCalling(false);
+
+  const startVoiceCall = () => setIsVoiceCalling(true);
+  const endVoiceCall = () => setIsVoiceCalling(false);
+
+  if (isCalling && selectedConversation) {
+      return <VideoCall channelName={selectedConversation} onEndCall={endVideoCall} />;
+  }
+
+  if (isVoiceCalling && selectedConversation) {
+    return <VoiceCall channelName={selectedConversation} onEndCall={endVoiceCall} />;
+  }
 
   return (
     <div className={`h-full flex ${isRTL ? 'flex-row-reverse' : 'flex-row'} bg-background`}>
@@ -342,10 +360,10 @@ export default function Messages() {
                 <p className="text-xs text-green-500">Active now</p>
               </div>
               <div className="flex items-center gap-1">
-                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
+                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full" onClick={startVoiceCall}>
                   <Phone className="h-5 w-5" />
                 </Button>
-                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full">
+                <Button size="icon" variant="ghost" className="h-9 w-9 rounded-full" onClick={startVideoCall}>
                   <Video className="h-5 w-5" />
                 </Button>
                 <Dialog>

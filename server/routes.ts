@@ -2,6 +2,24 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer } from "ws";
 import { storage } from "./storage";
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import { Readable } from 'stream';
+
+// Configure Cloudinary
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
+
+// Configure Multer for file uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB
+  },
+});
 
 // Store active WebSocket connections for real-time updates
 const wsClients = new Set<any>();
@@ -117,7 +135,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Communities
   app.post('/api/communities', async (req, res) => {
     try {
-      const { ownerId, name, description, visibility } = req.body;
+      const { name, description, visibility } = req.body;
+      // @ts-ignore
+      const ownerId = req.user.id;
       if (!ownerId || !name) return res.status(400).json({ error: 'Missing required fields' });
       const community = await storage.createCommunity(ownerId, name, description, visibility);
       res.json(community);
@@ -152,6 +172,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Upload files to Cloudinary
+  app.post('/api/upload', upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file provided' });
+      }
+
+      const readableStream = new Readable();
+      readableStream.push(req.file.buffer);
+      readableStream.push(null);
+
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'auto',
+          public_id: `uploads/${req.file.originalname.split('.')[0]}-${Date.now()}`,
+        },
+        (error, result) => {
+          if (error || !result) {
+            console.error('Error uploading to Cloudinary:', error);
+            return res.status(500).json({ error: 'Failed to upload file' });
+          }
+          res.json({ url: result.secure_url, public_id: result.public_id });
+        }
+      );
+
+      readableStream.pipe(uploadStream);
+
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      res.status(500).json({ error: 'Failed to upload file' });
+    }
+  });
+  app.post('/api/images/transform', async (req, res) => {
+    try {
+      const { publicId, transformation } = req.body;
+      if (!publicId || !transformation) {
+        return res.status(400).json({ error: 'Missing publicId or transformation' });
+      }
+      const transformedUrl = await storage.applyCloudinaryTransformation(publicId, transformation);
+      res.json({ url: transformedUrl });
+    } catch (error) {
+      console.error('Error transforming image:', error);
+      res.status(500).json({ error: 'Failed to transform image' });
+    }
+  });
+
+
   app.get('/api/users/:userId/communities', async (req, res) => {
     try {
       const communities = await storage.listCommunitiesForUser(req.params.userId);
@@ -164,13 +231,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/communities/:id/join', async (req, res) => {
     try {
-      const { userId } = req.body;
-      if (!userId) return res.status(400).json({ error: 'Missing userId' });
+      // @ts-ignore
+      const userId = req.user.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const member = await storage.joinCommunity(req.params.id, userId);
       res.json(member);
     } catch (error) {
       console.error('Error joining community:', error);
       res.status(500).json({ error: 'Failed to join community' });
+    }
+  });
+
+  app.delete('/api/communities/:id/leave', async (req, res) => {
+    try {
+      // @ts-ignore
+      const userId = req.user.id;
+      if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+      await storage.leaveCommunity(req.params.id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error leaving community:', error);
+      res.status(500).json({ error: 'Failed to leave community' });
+    }
+  });
+
+  app.get('/api/communities/:id/members', async (req, res) => {
+    try {
+      const members = await storage.getCommunityMembers(req.params.id);
+      res.json(members);
+    } catch (error) {
+      console.error('Error fetching community members:', error);
+      res.status(500).json({ error: 'Failed to fetch community members' });
+    }
+  });
+
+  app.get('/api/communities/:id/role', async (req, res) => {
+    try {
+      const { userId } = req.query;
+      if (!userId) {
+        return res.status(400).json({ error: 'userId is required' });
+      }
+      const role = await storage.getUserRoleInCommunity(req.params.id, userId as string);
+      res.json({ role });
+    } catch (error) {
+      console.error('Error fetching user role:', error);
+      res.status(500).json({ error: 'Failed to fetch user role' });
     }
   });
 
@@ -184,16 +289,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error creating channel:', error);
       res.status(500).json({ error: 'Failed to create channel' });
-    }
-  });
-
-  app.get('/api/communities/:id/members', async (req, res) => {
-    try {
-      const members = await storage.getCommunityMembers(req.params.id);
-      res.json(members);
-    } catch (error) {
-      console.error('Error fetching community members:', error);
-      res.status(500).json({ error: 'Failed to fetch community members' });
     }
   });
 

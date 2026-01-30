@@ -9,7 +9,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfiles";
 import { useRTL } from "@/hooks/useRTL";
-import tinarLogo from "@assets/tinar_logo.png";
 
 const COLLAPSED_WIDTH = '80px';
 const EXPANDED_WIDTH = '260px';
@@ -60,14 +59,11 @@ export default function Sidebar() {
     >
       <div className="flex items-center gap-2">
         <img 
-          src={tinarLogo} 
+          src="/tinar_logo.svg" 
           loading="eager"
-          alt="Tinar" 
-          className="h-8 w-8 object-contain"
+          alt="Logo"
+          className="h-12 w-12 object-contain"
         />
-        {!collapsed && <span className="text-xl font-black bg-gradient-to-r from-primary via-purple-400 to-pink-500 bg-clip-text text-transparent">
-          Tinar
-        </span>}
       </div>
 
       {!collapsed && (
@@ -90,11 +86,11 @@ export default function Sidebar() {
         {(() => {
           const [location] = useLocation();
           const items = [
-            { href: '/home', icon: Home, label: 'Home' },
-            { href: '/messages', icon: MessageCircle, label: 'Messages' },
-            { href: '/communities', icon: Users, label: 'Communities' },
-            { href: '/', icon: Video, label: 'Videos' },
-            { href: '/create', icon: PlusCircle, label: 'Create' },
+            { href: '/home', icon: Home, label: 'T-Feed' },
+            { href: '/messages', icon: MessageCircle, label: 'T-Direct' },
+            { href: '/communities', icon: Users, label: 'T-Realms' },
+            { href: '/', icon: Video, label: 'T-Shorts' },
+            { href: '/create', icon: PlusCircle, label: 'T-Studio' },
             { href: '/notifications', icon: Bell, label: 'Notifications' },
           ];
 
@@ -114,7 +110,12 @@ export default function Sidebar() {
                   <div className={cn('relative flex items-center justify-center h-8 w-8 rounded', isActive ? 'text-[rgb(255,107,0)]' : 'text-foreground') }>
                     <Icon className={cn('h-5 w-5', isActive ? 'text-[rgb(255,107,0)]' : '')} />
                   </div>
-                  {!collapsed && <span className={cn('text-sm', isActive ? 'text-[rgb(255,107,0)]' : 'text-foreground/90')}>{label}</span>}
+                  {!collapsed && (
+                    <span className={cn('text-sm', isActive ? 'text-[rgb(255,107,0)]' : 'text-foreground/90')}>
+                      <span className="group-hover:text-[#FF4500] group-hover:font-bold transition-all group-hover:drop-shadow-[0_0_5px_#FF4500]">{label.slice(0, 1)}</span>
+                      <span className="group-hover:text-white transition-colors">{label.slice(1)}</span>
+                    </span>
+                  )}
                   {isActive && !collapsed && <div className="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-1 rounded-r bg-[rgb(255,107,0)]" />}
                 </Button>
               </Link>

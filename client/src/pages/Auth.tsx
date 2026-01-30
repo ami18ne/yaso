@@ -9,7 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { motion } from 'framer-motion';
 import { ArrowDown, Loader2 } from 'lucide-react';
 import { translations } from '@/lib/translations';
-import logo from '/tinar_logo.svg';
+import logo from '../../public/tinar_logo.svg';
 import InfoModal from '@/components/ui/InfoModal';
 import { useTheme } from '@/contexts/ThemeContext';
 import ThemeToggleButton from '@/components/ThemeToggleButton';

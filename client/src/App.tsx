@@ -1,3 +1,4 @@
+
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -5,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import NavigationRail from "@/components/layout/NavigationRail";
 import Sidebar from "@/components/Sidebar";
 import Tino from "@/components/Tino";
 import BottomNav from "@/components/BottomNav";
@@ -15,7 +17,7 @@ import Create from "@/pages/Create";
 import CreateVideo from "@/pages/CreateVideo";
 import Videos from "@/pages/Videos";
 import Messages from "@/pages/Messages";
-import Communities from "@/pages/Communities";
+import CommunitiesPage from "@/pages/Communities"; // Renamed for clarity
 import Notifications from "@/pages/Notifications";
 import CommunityPage from "@/components/Community/CommunityPage";
 import Profile from "@/pages/Profile";
@@ -33,14 +35,13 @@ import LegalPage from "@/pages/Legal";
 import ContactPage from "@/pages/Contact";
 import FAQPage from "@/pages/FAQ";
 import AboutPage from "@/pages/About";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 function Router() {
   const { user, loading } = useAuth();
   const [location] = useLocation();
 
   const publicPaths = ['/auth', '/forgot-password', '/verify-otp', '/reset-password', '/legal', '/contact', '/faq', '/about'];
-  // Allow a dev-only E2E harness route to be reachable without authentication
   if (process.env.NODE_ENV !== 'production') {
     publicPaths.push('/__e2e__')
   }
@@ -48,8 +49,8 @@ function Router() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-2xl neon-text">Loading...</div>
+      <div className="flex items-center justify-center h-screen bg-[#1A1D21]">
+        <div className="text-2xl text-white">Loading...</div>
       </div>
     );
   }
@@ -60,10 +61,6 @@ function Router() {
 
   return (
     <Switch>
-      {/* Public routes */}
-      {process.env.NODE_ENV !== 'production' && (
-        <Route path="/__e2e__" component={E2EHarness} />
-      )}
       <Route path="/auth" component={Auth} />
       <Route path="/forgot-password" component={ForgotPassword} />
       <Route path="/verify-otp" component={VerifyOTP} />
@@ -72,16 +69,14 @@ function Router() {
       <Route path="/contact" component={ContactPage} />
       <Route path="/faq" component={FAQPage} />
       <Route path="/about" component={AboutPage} />
-      
-      {/* Protected routes */}
-      <Route path="/" component={Videos} />
+      <Route path="/" component={CommunitiesPage} />
       <Route path="/home" component={Home} />
       <Route path="/search" component={Search} />
       <Route path="/create" component={Create} />
       <Route path="/create-video" component={CreateVideo} />
       <Route path="/videos" component={Videos} />
       <Route path="/messages" component={Messages} />
-      <Route path="/communities" component={Communities} />
+      <Route path="/communities" component={CommunitiesPage} />
       <Route path="/notifications" component={Notifications} />
       <Route path="/profile/:username" component={Profile} />
       <Route path="/profile" component={Profile} />
@@ -97,12 +92,15 @@ function Router() {
 
 function AppContent() {
   const { user } = useAuth();
+  const [location] = useLocation();
+
+  const isCommunitiesPage = location.startsWith('/communities') || location === '/';
 
   return (
-    <div className="flex h-screen w-full bg-background">
-      {user && <Sidebar />}
-      <div className="flex-1 flex flex-col min-h-screen" style={{ marginLeft: 'var(--sidebar-width, 5rem)' }}>
-        <main className="flex-1 overflow-hidden">
+    <div className="flex h-screen w-full bg-[#24272B]">
+      {user && (isCommunitiesPage ? <NavigationRail /> : <Sidebar />)}
+      <div className="flex-1 flex flex-col min-h-0">
+        <main className="flex-1 overflow-y-auto">
           <Router />
         </main>
         {user && <BottomNav />}
@@ -132,7 +130,3 @@ function App() {
 }
 
 export default App;
-
-// Buzly Web App
-// Owner: YA SO
-// Date: 11-12-2025

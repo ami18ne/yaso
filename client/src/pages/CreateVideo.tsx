@@ -12,7 +12,6 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { supabase } from "@/lib/supabase"
 import { logger } from "@/lib/logger"
-import { uploadShortVideo } from "@/lib/storage"
 import MediaEditor from "@/components/MediaEditor"
 import type { MusicTrack } from "@/lib/musicLibrary"
 
@@ -110,8 +109,21 @@ export default function CreateVideo() {
     try {
       setIsUploading(true)
 
-      const uploadResult = await uploadShortVideo(fileToUpload, user.id)
-      const publicUrl = uploadResult.url
+      const formData = new FormData();
+      formData.append('video', fileToUpload);
+
+      const response = await fetch('/api/videos/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const uploadResult = await response.json();
+
+      if (!response.ok) {
+        throw new Error(uploadResult.error || 'Failed to upload video');
+      }
+
+      const publicUrl = uploadResult.url;
 
       const { error: insertError } = await supabase
         .from('videos')

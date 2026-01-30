@@ -61,7 +61,7 @@ export function useCreateCommunity() {
       const res = await fetch('/api/communities', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ownerId: user.id, name, description, visibility }),
+        body: JSON.stringify({ name, description, visibility }),
       })
       if (!res.ok) {
         const errorData = await res.json()
@@ -70,14 +70,10 @@ export function useCreateCommunity() {
       return res.json()
     },
     onSuccess: (data) => {
-      // Invalidate all community-related queries
       queryClient.invalidateQueries({ queryKey: ['communities'] })
-      
-      // Also refetch immediately to show new community
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['communities'] })
       }, 100)
-      
       toast({ 
         title: 'Community created!', 
         description: `"${data.name}" was created successfully.` 
@@ -105,7 +101,6 @@ export function useJoinCommunity() {
       const res = await fetch(`/api/communities/${communityId}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: user.id }),
       })
       if (!res.ok) throw new Error('Failed to join community')
       return res.json()
@@ -115,6 +110,36 @@ export function useJoinCommunity() {
       toast({ title: 'Joined community', description: 'You joined the community.' })
     },
   })
+}
+
+export function useLeaveCommunity() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ communityId }: { communityId: string }) => {
+      if (!user) throw new Error("Must be logged in to leave communities");
+      const res = await fetch(`/api/communities/${communityId}/leave`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to leave community");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+      toast({ title: "Left community", description: "You have left the community." });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to leave community",
+        variant: "destructive",
+      });
+    },
+  });
 }
 
 export function useChannelsForCommunity(communityId?: string) {

@@ -25,21 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast()
 
   useEffect(() => {
+    // First, try to get the current session and handle any potential errors
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
-    })
+    }).catch(error => {
+      console.error("Error getting auth session:", error)
+      setLoading(false) // Always stop loading, even if there's an error
+    });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    // Then, set up the auth state change listener
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
     })
 
-    return () => subscription.unsubscribe()
+    // Cleanup function to unsubscribe safely
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Share2, Play, Pause, Volume2, VolumeX, Music2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, Play, Pause, Volume2, VolumeX, Music2, Repeat } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLikeVideo } from "@/hooks/useVideos";
 import { logger } from "@/lib/logger";
@@ -44,7 +44,7 @@ export default function VideoCard({
   onShare,
 }: VideoCardProps) {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true); // Start muted by default
   const [localLiked, setLocalLiked] = useState(isLiked);
   const [localLikes, setLocalLikes] = useState(initialLikes);
   const [isLiking, setIsLiking] = useState(false);
@@ -59,6 +59,12 @@ export default function VideoCard({
   useEffect(() => {
     setLocalLiked(isLiked);
   }, [isLiked]);
+  
+  useEffect(() => {
+    if (videoRef.current) {
+        videoRef.current.muted = isMuted;
+    }
+  }, [isMuted]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -119,7 +125,7 @@ export default function VideoCard({
     }
   };
 
-  const togglePlay = () => {
+  const handleVideoClick = () => {
     if (videoRef.current) {
       if (isPlaying) {
         videoRef.current.pause();
@@ -127,16 +133,11 @@ export default function VideoCard({
         videoRef.current.play();
       }
       setIsPlaying(!isPlaying);
-    } else {
-      setIsPlaying(!isPlaying);
     }
-  };
+  }
 
   const toggleMute = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (videoRef.current) {
-      videoRef.current.muted = !isMuted;
-    }
     setIsMuted(!isMuted);
   };
 
@@ -163,10 +164,10 @@ export default function VideoCard({
       data-testid={`video-card-${creator.username}`}
     >
       <div
-        className="relative w-full h-full bg-gradient-to-br from-purple-900/20 to-black flex items-center justify-center cursor-pointer"
+        className="relative w-full h-full flex items-center justify-center cursor-pointer"
         onClick={() => {
           handleDoubleTap();
-          togglePlay();
+          handleVideoClick();
         }}
       >
         {videoUrl ? (
@@ -174,7 +175,7 @@ export default function VideoCard({
             ref={videoRef}
             src={videoUrl}
             poster={thumbnailUrl}
-            className="w-full h-full object-contain max-h-screen"
+            className="w-full h-full object-cover"
             loop
             playsInline
             muted={isMuted}
@@ -183,11 +184,6 @@ export default function VideoCard({
             onTimeUpdate={handleTimeUpdate}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            onLoadedMetadata={() => {
-              if (videoRef.current) {
-                videoRef.current.muted = isMuted;
-              }
-            }}
           />
         ) : thumbnailUrl ? (
           <img
@@ -205,6 +201,8 @@ export default function VideoCard({
           </div>
         )}
 
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
         <AnimatePresence>
           {showDoubleTapHeart && (
             <motion.div
@@ -214,41 +212,37 @@ export default function VideoCard({
               transition={{ duration: 0.3 }}
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
             >
-              <Heart className="h-24 w-24 text-red-500 fill-red-500 drop-shadow-lg" />
+              <Heart className="h-24 w-24 text-red-500/90 fill-red-500/90 drop-shadow-lg" />
             </motion.div>
           )}
         </AnimatePresence>
-
+        
+        <AnimatePresence>
         {!isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-            <motion.div 
-              className="rounded-full bg-primary/80 p-3 sm:p-6 neon-glow-strong"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <Play className="h-8 sm:h-12 w-8 sm:w-12 text-white fill-white" strokeWidth={2} />
-            </motion.div>
-          </div>
-        )}
-
-        {isPlaying && (
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-            <div className="rounded-full bg-black/50 p-2 sm:p-4 flex-shrink-0">
-              <Pause className="h-6 sm:h-8 w-6 sm:w-8 text-white" strokeWidth={2} />
-            </div>
-          </div>
-        )}
-
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
           <motion.div 
-            className="h-full bg-primary"
+            initial={{ opacity: 0, scale: 1.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.5 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
+              <div className="rounded-full bg-black/50 p-6 backdrop-blur-sm">
+                <Play className="h-12 w-12 text-white fill-white" strokeWidth={1.5} />
+              </div>
+          </motion.div>
+        )}
+        </AnimatePresence>
+        
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
+          <motion.div 
+            className="h-full bg-white"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         <button
           onClick={toggleMute}
-          className="absolute top-4 right-4 p-2 rounded-full bg-black/50 hover:bg-black/70 transition-colors"
+          className="absolute top-5 right-4 p-2 rounded-full bg-black/20 border border-white/10 backdrop-blur-md hover:bg-black/40 transition-colors"
         >
           {isMuted ? (
             <VolumeX className="h-5 w-5 text-white" />
@@ -258,82 +252,71 @@ export default function VideoCard({
         </button>
       </div>
 
-      <div className="absolute bottom-32 sm:bottom-24 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-4 pb-24 sm:p-6 sm:pb-24 text-white">
         <div className="flex items-end gap-4">
-          <div className="flex-1 space-y-3">
+          <div className="flex-1 space-y-3 min-w-0">
             <div className="flex items-center gap-3">
               <button 
-                className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3"
                 onClick={(e) => {
                   e.stopPropagation();
                   setLocation(`/profile/${creator.username}`);
                 }}
               >
-                <Avatar className="h-10 w-10 border-2 border-primary neon-glow cursor-pointer">
+                <Avatar className="h-12 w-12 border-2 border-white/80">
                   <AvatarImage src={creator.avatar} alt={creator.name} />
-                  <AvatarFallback className="bg-primary text-white">
+                  <AvatarFallback className="bg-primary/80 text-white">
                     {creator.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-left">
-                  <div className="flex items-center gap-1">
-                    <h3 className="font-semibold text-white hover:underline">{creator.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base hover:underline">{creator.name}</h3>
                     {isVerifiedUser(creator.username) && <VerifiedBadge size="sm" />}
                   </div>
-                  <p className="text-sm text-white/70">@{creator.username}</p>
+                  <p className="text-sm text-white/80">@{creator.username}</p>
                 </div>
               </button>
-              <Button
-                size="sm"
-                className="ml-auto neon-glow hover-elevate"
-                data-testid="button-follow"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  logger.debug('Follow clicked');
-                }}
-              >
-                Follow
-              </Button>
             </div>
-            <p className="text-white text-sm leading-relaxed line-clamp-2">{caption}</p>
+            <p className="text-sm leading-relaxed line-clamp-2">{caption}</p>
             
             {musicName && (
-              <div className="flex items-center gap-2 text-white/70">
-                <div className="w-6 h-6 rounded-full bg-primary/50 flex items-center justify-center animate-spin-slow">
+              <div className="flex items-center gap-2 text-white/90">
+                <div className="w-5 h-5 rounded-full bg-gray-800/70 flex items-center justify-center animate-spin-slow">
                   <Music2 className="h-3 w-3" />
                 </div>
-                <span className="text-xs truncate max-w-[200px]">{musicName}</span>
+                <span className="text-xs truncate">{musicName}</span>
               </div>
             )}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col items-center gap-4">
             <motion.button
               onClick={(e) => {
                 e.stopPropagation();
                 handleLike();
               }}
-              className="flex flex-col items-center gap-0.5 sm:gap-1 group"
+              className="flex flex-col items-center gap-1 group"
               data-testid="button-like-video"
               whileTap={{ scale: 0.9 }}
             >
               <motion.div 
                 className={cn(
-                  "rounded-full p-1.5 sm:p-3 transition-all flex-shrink-0",
+                  "rounded-full p-3 transition-all flex-shrink-0 backdrop-blur-md border",
                   localLiked
-                    ? "bg-primary neon-glow-strong"
-                    : "bg-white/10 hover:bg-white/20"
+                    ? "bg-red-500/80 border-red-500/90"
+                    : "bg-black/20 border-white/10 group-hover:bg-black/30"
                 )}
                 animate={localLiked ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.3 }}
               >
                 <Heart 
-                  className="h-4 sm:h-6 w-4 sm:w-6 text-white transition-all" 
+                  className="h-6 w-6 text-white transition-all" 
                   fill={localLiked ? "currentColor" : "none"}
                   strokeWidth={2}
                 />
               </motion.div>
-              <span className="text-white text-xs font-medium">{formatCount(localLikes)}</span>
+              <span className="text-xs font-semibold">{formatCount(localLikes)}</span>
             </motion.button>
 
             <button
@@ -342,13 +325,27 @@ export default function VideoCard({
                 onComment?.();
                 logger.debug('Comment clicked');
               }}
-              className="flex flex-col items-center gap-1 group hover:opacity-80 transition-opacity"
+              className="flex flex-col items-center gap-1 group"
               data-testid="button-comment-video"
             >
-              <div className="rounded-full bg-white/10 p-3 hover:bg-white/20 transition-colors">
+              <div className="rounded-full bg-black/20 border border-white/10 p-3 backdrop-blur-md transition-colors group-hover:bg-black/30">
                 <MessageCircle className="h-6 w-6 text-white" strokeWidth={2} />
               </div>
-              <span className="text-white text-xs font-medium">{formatCount(comments)}</span>
+              <span className="text-xs font-semibold">{formatCount(comments)}</span>
+            </button>
+            
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                logger.debug('Remix clicked');
+              }}
+              className="flex flex-col items-center gap-1 group"
+              data-testid="button-remix-video"
+            >
+              <div className="rounded-full bg-black/20 border border-white/10 p-3 backdrop-blur-md transition-colors group-hover:bg-black/30">
+                <Repeat className="h-6 w-6 text-white" strokeWidth={2} />
+              </div>
+              <span className="text-xs font-semibold">Remix</span>
             </button>
 
             <button
@@ -357,12 +354,13 @@ export default function VideoCard({
                 onShare?.();
                 logger.debug('Share clicked');
               }}
-              className="flex flex-col items-center gap-1 group hover:opacity-80 transition-opacity"
+              className="flex flex-col items-center gap-1 group"
               data-testid="button-share-video"
             >
-              <div className="rounded-full bg-white/10 p-3 hover:bg-white/20 transition-colors">
+              <div className="rounded-full bg-black/20 border border-white/10 p-3 backdrop-blur-md transition-colors group-hover:bg-black/30">
                 <Share2 className="h-6 w-6 text-white" strokeWidth={2} />
               </div>
+              <span className="text-xs font-semibold">Share</span>
             </button>
           </div>
         </div>

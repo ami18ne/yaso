@@ -20,11 +20,14 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
-  const isReplit = !!process.env.REPLIT_DEV_DOMAIN;
-  
   const serverOptions = {
     middlewareMode: true,
-    hmr: isReplit ? false : { server },
+    hmr: {
+      server,
+      clientPort: 443,
+      host: '9000-firebase-yaso-1769020646810.cluster-64pjnskmlbaxowh5lzq6i7v4ra.cloudworkstations.dev',
+      protocol: 'wss',
+    },
     allowedHosts: true as const,
   };
 
@@ -58,7 +61,7 @@ export async function setupVite(app: Express, server: Server) {
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
       template = template.replace(
         `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
+        `src="/client/src/main.tsx?v=${nanoid()}"`,
       );
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);

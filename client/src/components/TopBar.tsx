@@ -6,7 +6,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { useProfile } from "@/hooks/useProfiles";
 import { useRTL } from "@/hooks/useRTL";
-import tinarLogo from "@assets/tinar_logo.png";
+import tinarLogo from "/tinar_logo.svg";
 import { cn } from "@/lib/utils";
 import ThemeToggleButton from "./ThemeToggleButton";
 
@@ -25,12 +25,9 @@ export default function TopBar() {
               <img 
                 src={tinarLogo} 
                 loading="eager"
-                alt="Tinar" 
+                alt="Logo" 
                 className="h-8 w-8 md:h-9 md:w-9 object-contain transition-transform group-hover:scale-110"
               />
-              <span className="text-xl md:text-2xl font-black bg-gradient-to-r from-primary via-purple-400 to-pink-500 bg-clip-text text-transparent hidden sm:inline">
-                Tinar
-              </span>
             </div>
           </Link>
 

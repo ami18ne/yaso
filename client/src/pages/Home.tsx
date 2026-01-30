@@ -50,7 +50,8 @@ export default function Home() {
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full">
         <div className="w-full max-w-2xl mx-auto pb-24 md:pb-8">
-          <div className="flex justify-end p-4">
+          <div className="flex justify-between items-center p-4">
+            <h1 className="text-2xl font-bold">T-Feed</h1>
             <Button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun /> : <Moon />}
             </Button>
