@@ -1,12 +1,12 @@
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
-import { useLocation } from 'wouter'
-import { Mail } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Mail } from 'lucide-react'
+import { useState } from 'react'
+import { useLocation } from 'wouter'
 
 export default function VerifyOTP() {
   const [otp, setOtp] = useState('')
@@ -96,11 +96,7 @@ export default function VerifyOTP() {
 
           <div className="text-center text-sm">
             <p className="text-muted-foreground mb-2">Didn't receive the code?</p>
-            <button
-              type="button"
-              onClick={handleResend}
-              className="text-primary hover:underline"
-            >
+            <button type="button" onClick={handleResend} className="text-primary hover:underline">
               Resend verification code
             </button>
           </div>

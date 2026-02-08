@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import type React from 'react'
+import { useState } from 'react'
 
 interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
   /** If true, image is considered high priority (LCP) and will be loaded eagerly */
@@ -7,10 +8,27 @@ interface Props extends React.ImgHTMLAttributes<HTMLImageElement> {
   placeholder?: string
 }
 
-export default function OptimizedImage({ src, alt, className, priority = false, placeholder, onLoad, srcSet, sizes, ...rest }: Props) {
+export default function OptimizedImage({
+  src,
+  alt,
+  className,
+  priority = false,
+  placeholder,
+  onLoad,
+  srcSet,
+  sizes,
+  ...rest
+}: Props) {
   const [loaded, setLoaded] = useState(false)
 
-  const wrapperStyle: React.CSSProperties = placeholder && !loaded ? { backgroundImage: `url(${placeholder})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}
+  const wrapperStyle: React.CSSProperties =
+    placeholder && !loaded
+      ? {
+          backgroundImage: `url(${placeholder})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }
+      : {}
 
   return (
     <div className={`relative overflow-hidden ${className || ''}`} style={wrapperStyle}>

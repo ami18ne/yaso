@@ -1,26 +1,27 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import MusicBrowser from '@/components/MusicBrowser'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useToast } from '@/hooks/use-toast'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { type MusicTrack, musicLibraryManager } from '@/lib/musicLibrary'
+import { type VideoFilter, videoFilters, videoProcessor } from '@/lib/videoProcessor'
 import {
+  Check,
+  Library,
+  Loader2,
   Music,
+  Pause,
+  Play,
   Sparkles,
   Volume2,
   VolumeX,
-  Play,
-  Pause,
-  Check,
-  Loader2,
   Wand2,
   X,
-  Library
 } from 'lucide-react'
-import { videoProcessor, videoFilters, type VideoFilter } from '@/lib/videoProcessor'
-import { musicLibraryManager, type MusicTrack } from '@/lib/musicLibrary'
-import MusicBrowser from '@/components/MusicBrowser'
-import { useLanguage } from '@/contexts/LanguageContext'
-import { useToast } from '@/hooks/use-toast'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 interface MediaEditorProps {
   file: File
@@ -39,7 +40,7 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
   const [ffmpegLoaded, setFfmpegLoaded] = useState(false)
   const [loadingFFmpeg, setLoadingFFmpeg] = useState(false)
   const [showMusicBrowser, setShowMusicBrowser] = useState(false)
-  
+
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { toast } = useToast()
@@ -59,17 +60,17 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
 
   const loadFFmpeg = useCallback(async () => {
     if (ffmpegLoaded || loadingFFmpeg) return
-    
+
     setLoadingFFmpeg(true)
     try {
       await videoProcessor.load()
       setFfmpegLoaded(true)
     } catch (error) {
-      console.error('Failed to load FFmpeg:', error)
+      ErrorLogger.log('Failed to load FFmpeg:', error)
       toast({
         title: isRTL ? 'خطأ في تحميل معالج الفيديو' : 'Failed to load video processor',
         description: isRTL ? 'يرجى المحاولة مرة أخرى' : 'Please try again',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setLoadingFFmpeg(false)
@@ -122,7 +123,7 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
         canvas.width = img.width
         canvas.height = img.height
         const ctx = canvas.getContext('2d')
-        
+
         if (!ctx) {
           reject(new Error('Could not get canvas context'))
           return
@@ -131,13 +132,17 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
         ctx.filter = selectedFilter.preview
         ctx.drawImage(img, 0, 0)
 
-        canvas.toBlob((blob) => {
-          if (blob) {
-            resolve(blob)
-          } else {
-            reject(new Error('Failed to create blob'))
-          }
-        }, file.type || 'image/jpeg', 0.9)
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob)
+            } else {
+              reject(new Error('Failed to create blob'))
+            }
+          },
+          file.type || 'image/jpeg',
+          0.9
+        )
       }
       img.onerror = () => reject(new Error('Failed to load image'))
       img.src = previewUrl
@@ -147,33 +152,33 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
   const handleSave = async () => {
     setIsProcessing(true)
     musicLibraryManager.stopCurrentTrack()
-    
+
     try {
       let processedFile: File = file
-      
+
       if (mediaType === 'image' && selectedFilter.id !== 'none') {
         const processedBlob = await processImageWithFilter()
         processedFile = new File([processedBlob], file.name, { type: file.type || 'image/jpeg' })
       } else if (mediaType === 'video' && (selectedFilter.id !== 'none' || selectedMusic)) {
         await loadFFmpeg()
-        
+
         const processedBlob = await videoProcessor.processVideo(file, {
           filterId: selectedFilter.id,
           audioUrl: selectedMusic?.audioUrl,
           audioVolume: musicVolume,
-          replaceAudio: false
+          replaceAudio: false,
         })
-        
+
         processedFile = new File([processedBlob], file.name, { type: 'video/mp4' })
       }
-      
+
       onSave(processedFile, selectedMusic || undefined)
     } catch (error) {
-      console.error('Error processing media:', error)
+      ErrorLogger.log('Error processing media:', error)
       toast({
         title: isRTL ? 'خطأ في المعالجة' : 'Processing Error',
         description: isRTL ? 'فشل في معالجة الوسائط' : 'Failed to process media',
-        variant: 'destructive'
+        variant: 'destructive',
       })
     } finally {
       setIsProcessing(false)
@@ -199,8 +204,8 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
         <h2 className="text-base sm:text-lg font-semibold">
           {isRTL ? 'تحرير الوسائط' : 'Edit Media'}
         </h2>
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={isProcessing}
           className="bg-primary hover:bg-primary/90 h-8 w-8 sm:h-10 sm:w-10"
           size="icon"
@@ -235,7 +240,7 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
             />
           )}
           <canvas ref={canvasRef} className="hidden" />
-          
+
           {mediaType === 'video' && (
             <button
               onClick={togglePlayPause}
@@ -253,11 +258,17 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
         <div className="border-t border-border/50 flex-shrink-0 overflow-hidden">
           <Tabs defaultValue="filters" className="w-full h-full flex flex-col">
             <TabsList className="w-full grid grid-cols-2 bg-muted/50 rounded-none h-10 sm:h-12 flex-shrink-0">
-              <TabsTrigger value="filters" className="gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary/20">
+              <TabsTrigger
+                value="filters"
+                className="gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary/20"
+              >
                 <Wand2 className="h-3 sm:h-4 w-3 sm:w-4" />
                 {isRTL ? 'فلاتر' : 'Filters'}
               </TabsTrigger>
-              <TabsTrigger value="music" className="gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary/20">
+              <TabsTrigger
+                value="music"
+                className="gap-1 sm:gap-2 text-xs sm:text-sm data-[state=active]:bg-primary/20"
+              >
                 <Music className="h-3 sm:h-4 w-3 sm:w-4" />
                 {isRTL ? 'موسيقى' : 'Music'}
               </TabsTrigger>
@@ -287,11 +298,7 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <video
-                            src={previewUrl}
-                            className="w-full h-full object-cover"
-                            muted
-                          />
+                          <video src={previewUrl} className="w-full h-full object-cover" muted />
                         )}
                       </div>
                       <span className="text-xs font-medium">
@@ -327,17 +334,9 @@ export default function MediaEditor({ file, mediaType, onSave, onCancel }: Media
                       onClick={togglePlayPause}
                       className="p-2 rounded-full bg-primary/20 hover:bg-primary/30"
                     >
-                      {isPlaying ? (
-                        <Pause className="h-4 w-4" />
-                      ) : (
-                        <Play className="h-4 w-4" />
-                      )}
+                      {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                     </button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleRemoveMusic}
-                    >
+                    <Button variant="ghost" size="icon" onClick={handleRemoveMusic}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>

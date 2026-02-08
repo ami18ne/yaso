@@ -1,16 +1,4 @@
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { Bookmark, Link, Flag, Trash2, Edit } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { useDeletePost } from '@/hooks/usePosts'
-import { logger } from '@/lib/logger'
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -20,6 +8,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useToast } from '@/hooks/use-toast'
+import { useDeletePost } from '@/hooks/usePosts'
+import { logger } from '@/lib/logger'
+import { Bookmark, Edit, Flag, Link, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
 interface PostOptionsMenuProps {
@@ -85,11 +85,7 @@ export default function PostOptionsMenu({
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-xs hover-elevate"
-          >
+          <Button size="sm" variant="ghost" className="text-xs hover-elevate">
             •••
           </Button>
         </DropdownMenuTrigger>
@@ -110,17 +106,17 @@ export default function PostOptionsMenu({
               <DropdownMenuSeparator />
             </>
           )}
-          
+
           <DropdownMenuItem onClick={copyLink} className="cursor-pointer">
             <Link className="h-4 w-4 mr-2" strokeWidth={2} />
             Copy link to post
           </DropdownMenuItem>
-          
+
           <DropdownMenuItem className="cursor-pointer">
             <Bookmark className="h-4 w-4 mr-2" strokeWidth={2} />
             Add to collection
           </DropdownMenuItem>
-          
+
           {!isOwnPost && (
             <>
               <DropdownMenuSeparator />

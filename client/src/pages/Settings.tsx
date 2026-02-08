@@ -1,8 +1,5 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -10,27 +7,43 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Switch } from '@/components/ui/switch'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useToast } from '@/hooks/use-toast'
+import { ErrorLogger } from '@/lib/errorHandler'
+import {
+  BadgeCheck,
+  Bell,
+  Check,
+  ChevronRight,
+  Globe,
+  HelpCircle,
+  Lock,
+  LogOut,
+  MapPin,
+  Palette,
+  ShieldCheck,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'wouter'
-import { Bell, Lock, Globe, ShieldCheck, HelpCircle, LogOut, ChevronRight, Palette, Check, BadgeCheck, MapPin } from 'lucide-react'
-import { useState, useEffect } from 'react'
 
-const SETTINGS_STORAGE_KEY = 'buzly_user_settings';
+const SETTINGS_STORAGE_KEY = 'buzly_user_settings'
 
 interface UserSettings {
   notifications: {
-    likes: boolean;
-    comments: boolean;
-    follows: boolean;
-    messages: boolean;
-  };
+    likes: boolean
+    comments: boolean
+    follows: boolean
+    messages: boolean
+  }
   privacy: {
-    privateAccount: boolean;
-    hideActivity: boolean;
-    allowTags: boolean;
-  };
+    privateAccount: boolean
+    hideActivity: boolean
+    allowTags: boolean
+  }
 }
 
 const defaultSettings: UserSettings = {
@@ -45,25 +58,25 @@ const defaultSettings: UserSettings = {
     hideActivity: false,
     allowTags: true,
   },
-};
+}
 
 function loadSettings(): UserSettings {
   try {
-    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const stored = localStorage.getItem(SETTINGS_STORAGE_KEY)
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored)
     }
   } catch (e) {
-    console.error('Failed to load settings:', e);
+    ErrorLogger.log('Failed to load settings:', e)
   }
-  return defaultSettings;
+  return defaultSettings
 }
 
 function saveSettings(settings: UserSettings): void {
   try {
-    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings))
   } catch (e) {
-    console.error('Failed to save settings:', e);
+    ErrorLogger.log('Failed to save settings:', e)
   }
 }
 
@@ -72,43 +85,44 @@ export default function Settings() {
   const { toast } = useToast()
   const [, setLocation] = useLocation()
   const { language, setLanguage, isRTL, t } = useLanguage()
-  
+
   const [settings, setSettings] = useState<UserSettings>(loadSettings)
   const [languageDialogOpen, setLanguageDialogOpen] = useState(false)
 
   useEffect(() => {
-    saveSettings(settings);
-  }, [settings]);
+    saveSettings(settings)
+  }, [settings])
 
   const updateNotificationSetting = (key: keyof UserSettings['notifications'], value: boolean) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       notifications: { ...prev.notifications, [key]: value },
-    }));
+    }))
     toast({
       title: t('settings.updated'),
-      description: isRTL 
-        ? `${value ? t('common.enabled') : t('common.disabled')} إشعارات ${key}` 
+      description: isRTL
+        ? `${value ? t('common.enabled') : t('common.disabled')} إشعارات ${key}`
         : `${key.charAt(0).toUpperCase() + key.slice(1)} notifications ${value ? t('common.enabled') : t('common.disabled')}`,
-    });
-  };
+    })
+  }
 
   const updatePrivacySetting = (key: keyof UserSettings['privacy'], value: boolean) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
       privacy: { ...prev.privacy, [key]: value },
-    }));
+    }))
     toast({
       title: t('settings.updated'),
       description: t('settings.privacyUpdated'),
-    });
-  };
+    })
+  }
 
   const handleLogout = async () => {
     try {
       await signOut()
       setLocation('/auth')
     } catch (error) {
+      ErrorLogger.log('Failed to sign out', error)
       toast({
         title: 'Error',
         description: 'Failed to sign out',
@@ -249,9 +263,7 @@ export default function Settings() {
             </CardContent>
           </Card>
 
-          <p className="text-center text-sm text-muted-foreground pb-4">
-            Buzly v1.0.0
-          </p>
+          <p className="text-center text-sm text-muted-foreground pb-4">Buzly v1.0.0</p>
         </div>
       </ScrollArea>
 
@@ -259,9 +271,7 @@ export default function Settings() {
         <DialogContent className="sm:max-w-md border-primary/30">
           <DialogHeader>
             <DialogTitle>{t('settings.selectLanguage')}</DialogTitle>
-            <DialogDescription>
-              {t('settings.selectLanguage.desc')}
-            </DialogDescription>
+            <DialogDescription>{t('settings.selectLanguage.desc')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <button
@@ -312,9 +322,7 @@ function SettingRow({
     <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/30 transition-colors">
       <div className="space-y-0.5 flex-1">
         <Label className="text-sm font-medium cursor-pointer">{label}</Label>
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="text-xs text-muted-foreground">{description}</p>}
       </div>
       <Switch checked={checked} onCheckedChange={onCheckedChange} />
     </div>

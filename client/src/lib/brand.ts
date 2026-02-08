@@ -1,8 +1,8 @@
 export const BRAND = {
-  name: 'Buzly',
-  tagline: 'Connect. Share. Buzz.',
-  taglineAr: 'تواصل. شارك. انطلق.',
-  
+  name: 'Trillr',
+  tagline: 'Connect. Share. Inspire.',
+  taglineAr: 'تواصل. شارك. ألهم.',
+
   colors: {
     primary: {
       50: '#FAF5FF',
@@ -63,7 +63,7 @@ export const BRAND = {
       glow: 'radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%)',
     },
   },
-  
+
   typography: {
     fontFamily: {
       sans: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif",
@@ -106,7 +106,7 @@ export const BRAND = {
       widest: '0.1em',
     },
   },
-  
+
   spacing: {
     xs: '0.25rem',
     sm: '0.5rem',
@@ -116,7 +116,7 @@ export const BRAND = {
     '2xl': '3rem',
     '3xl': '4rem',
   },
-  
+
   borderRadius: {
     none: '0',
     sm: '0.25rem',
@@ -127,7 +127,7 @@ export const BRAND = {
     '3xl': '2rem',
     full: '9999px',
   },
-  
+
   shadows: {
     sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
     md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
@@ -137,7 +137,7 @@ export const BRAND = {
     glowLg: '0 0 40px rgba(168, 85, 247, 0.5)',
     neon: '0 0 10px rgba(168, 85, 247, 0.8), 0 0 20px rgba(168, 85, 247, 0.6), 0 0 30px rgba(168, 85, 247, 0.4)',
   },
-  
+
   animation: {
     duration: {
       fast: '150ms',
@@ -154,7 +154,7 @@ export const BRAND = {
       elastic: 'cubic-bezier(0.68, -0.6, 0.32, 1.6)',
     },
   },
-  
+
   breakpoints: {
     xs: '320px',
     sm: '480px',
@@ -163,7 +163,7 @@ export const BRAND = {
     xl: '1280px',
     '2xl': '1536px',
   },
-  
+
   zIndex: {
     dropdown: 1000,
     sticky: 1020,
@@ -182,10 +182,7 @@ export function getGradient(type: keyof typeof BRAND.colors.gradients): string {
   return BRAND.colors.gradients[type]
 }
 
-export function getColor(
-  palette: 'primary' | 'secondary' | 'neutral',
-  shade: number
-): string {
+export function getColor(palette: 'primary' | 'secondary' | 'neutral', shade: number): string {
   return BRAND.colors[palette][shade as keyof typeof BRAND.colors.primary]
 }
 

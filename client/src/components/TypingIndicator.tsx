@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 
 interface TypingIndicatorProps {
-  username?: string;
-  className?: string;
+  username?: string
+  className?: string
 }
 
 export default function TypingIndicator({ username, className }: TypingIndicatorProps) {
@@ -20,7 +20,7 @@ export default function TypingIndicator({ username, className }: TypingIndicator
             }}
             transition={{
               duration: 0.8,
-              repeat: Infinity,
+              repeat: Number.POSITIVE_INFINITY,
               delay: i * 0.15,
               ease: 'easeInOut',
             }}
@@ -33,5 +33,5 @@ export default function TypingIndicator({ username, className }: TypingIndicator
         </span>
       )}
     </div>
-  );
+  )
 }

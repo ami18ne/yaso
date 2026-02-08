@@ -1,28 +1,28 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Slider } from '@/components/ui/slider'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useToast } from '@/hooks/use-toast'
-import { useLocation } from 'wouter'
-import { useGeolocation, formatDistance, calculateDistance } from '@/hooks/useGeolocation'
-import { 
-  MapPin, 
-  Navigation, 
-  Users, 
-  ChevronLeft, 
-  Loader2, 
-  RefreshCw,
-  BadgeCheck,
-  UserPlus,
-  MessageCircle,
-  Radar
-} from 'lucide-react'
+import { calculateDistance, formatDistance, useGeolocation } from '@/hooks/useGeolocation'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
+import {
+  BadgeCheck,
+  ChevronLeft,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  Navigation,
+  Radar,
+  RefreshCw,
+  UserPlus,
+  Users,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'wouter'
 
 interface NearbyUser {
   id: string
@@ -37,11 +37,61 @@ interface NearbyUser {
 }
 
 const mockNearbyUsers: NearbyUser[] = [
-  { id: '1', username: 'sara_design', fullName: 'Sara Ahmed', avatar: null, bio: 'UI/UX Designer', distance: 0.5, isVerified: true, isFollowing: false, mutualFollowers: 12 },
-  { id: '2', username: 'mohammed_dev', fullName: 'Mohammed Ali', avatar: null, bio: 'Full Stack Developer', distance: 1.2, isVerified: false, isFollowing: true, mutualFollowers: 5 },
-  { id: '3', username: 'layla_photo', fullName: 'Layla Hassan', avatar: null, bio: 'Photographer', distance: 2.8, isVerified: true, isFollowing: false, mutualFollowers: 23 },
-  { id: '4', username: 'ahmed_fit', fullName: 'Ahmed Khalil', avatar: null, bio: 'Fitness Coach', distance: 3.5, isVerified: false, isFollowing: false, mutualFollowers: 8 },
-  { id: '5', username: 'nour_art', fullName: 'Nour Ibrahim', avatar: null, bio: 'Digital Artist', distance: 4.2, isVerified: false, isFollowing: false, mutualFollowers: 3 },
+  {
+    id: '1',
+    username: 'sara_design',
+    fullName: 'Sara Ahmed',
+    avatar: null,
+    bio: 'UI/UX Designer',
+    distance: 0.5,
+    isVerified: true,
+    isFollowing: false,
+    mutualFollowers: 12,
+  },
+  {
+    id: '2',
+    username: 'mohammed_dev',
+    fullName: 'Mohammed Ali',
+    avatar: null,
+    bio: 'Full Stack Developer',
+    distance: 1.2,
+    isVerified: false,
+    isFollowing: true,
+    mutualFollowers: 5,
+  },
+  {
+    id: '3',
+    username: 'layla_photo',
+    fullName: 'Layla Hassan',
+    avatar: null,
+    bio: 'Photographer',
+    distance: 2.8,
+    isVerified: true,
+    isFollowing: false,
+    mutualFollowers: 23,
+  },
+  {
+    id: '4',
+    username: 'ahmed_fit',
+    fullName: 'Ahmed Khalil',
+    avatar: null,
+    bio: 'Fitness Coach',
+    distance: 3.5,
+    isVerified: false,
+    isFollowing: false,
+    mutualFollowers: 8,
+  },
+  {
+    id: '5',
+    username: 'nour_art',
+    fullName: 'Nour Ibrahim',
+    avatar: null,
+    bio: 'Digital Artist',
+    distance: 4.2,
+    isVerified: false,
+    isFollowing: false,
+    mutualFollowers: 3,
+  },
 ]
 
 export default function NearBy() {
@@ -49,7 +99,7 @@ export default function NearBy() {
   const { isRTL } = useLanguage()
   const { toast } = useToast()
   const [, setLocation] = useLocation()
-  
+
   const { latitude, longitude, loading, error, requestLocation } = useGeolocation()
   const [radius, setRadius] = useState([5])
   const [nearbyUsers, setNearbyUsers] = useState<NearbyUser[]>([])
@@ -63,16 +113,16 @@ export default function NearBy() {
 
   const searchNearby = async () => {
     setIsSearching(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    const filtered = mockNearbyUsers.filter(u => u.distance <= radius[0])
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+
+    const filtered = mockNearbyUsers.filter((u) => u.distance <= radius[0])
     setNearbyUsers(filtered)
     setIsSearching(false)
   }
 
   const handleFollow = (userId: string) => {
-    setNearbyUsers(prev => 
-      prev.map(u => u.id === userId ? { ...u, isFollowing: !u.isFollowing } : u)
+    setNearbyUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, isFollowing: !u.isFollowing } : u))
     )
     toast({
       title: isRTL ? 'تم!' : 'Done!',
@@ -118,15 +168,11 @@ export default function NearBy() {
                   {isRTL ? 'تفعيل الموقع' : 'Enable Location'}
                 </h3>
                 <p className="text-muted-foreground mb-6">
-                  {isRTL 
+                  {isRTL
                     ? 'نحتاج إذنك للوصول إلى موقعك للعثور على أشخاص قريبين'
                     : 'We need your permission to access your location to find nearby people'}
                 </p>
-                <Button 
-                  onClick={requestLocation}
-                  className="gradient-primary"
-                  disabled={loading}
-                >
+                <Button onClick={requestLocation} className="gradient-primary" disabled={loading}>
                   {loading ? (
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
@@ -134,10 +180,8 @@ export default function NearBy() {
                   )}
                   {isRTL ? 'تفعيل الموقع' : 'Enable Location'}
                 </Button>
-                
-                {error && (
-                  <p className="mt-4 text-sm text-destructive">{error}</p>
-                )}
+
+                {error && <p className="mt-4 text-sm text-destructive">{error}</p>}
               </CardContent>
             </Card>
           )}
@@ -149,9 +193,7 @@ export default function NearBy() {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
                       <Radar className="w-5 h-5 text-primary" />
-                      <span className="font-medium">
-                        {isRTL ? 'نطاق البحث' : 'Search Radius'}
-                      </span>
+                      <span className="font-medium">{isRTL ? 'نطاق البحث' : 'Search Radius'}</span>
                     </div>
                     <span className="text-primary font-bold">{radius[0]} km</span>
                   </div>
@@ -174,7 +216,7 @@ export default function NearBy() {
                 <div className="flex items-center gap-2">
                   <Users className="w-5 h-5 text-muted-foreground" />
                   <span className="text-muted-foreground">
-                    {isRTL 
+                    {isRTL
                       ? `${nearbyUsers.length} شخص قريب`
                       : `${nearbyUsers.length} people nearby`}
                   </span>
@@ -186,7 +228,7 @@ export default function NearBy() {
                   disabled={isSearching}
                   className="gap-2"
                 >
-                  <RefreshCw className={cn("w-4 h-4", isSearching && "animate-spin")} />
+                  <RefreshCw className={cn('w-4 h-4', isSearching && 'animate-spin')} />
                   {isRTL ? 'تحديث' : 'Refresh'}
                 </Button>
               </div>
@@ -228,14 +270,18 @@ export default function NearBy() {
                                 </div>
                               )}
                             </div>
-                            
+
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
                                 <span className="font-semibold truncate">{person.fullName}</span>
                               </div>
-                              <p className="text-sm text-muted-foreground truncate">@{person.username}</p>
+                              <p className="text-sm text-muted-foreground truncate">
+                                @{person.username}
+                              </p>
                               {person.bio && (
-                                <p className="text-xs text-muted-foreground mt-0.5 truncate">{person.bio}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                                  {person.bio}
+                                </p>
                               )}
                               <div className="flex items-center gap-3 mt-1.5">
                                 <span className="text-xs text-primary flex items-center gap-1">
@@ -249,7 +295,7 @@ export default function NearBy() {
                                 )}
                               </div>
                             </div>
-                            
+
                             <div className="flex gap-2">
                               <Button
                                 variant="ghost"
@@ -260,16 +306,20 @@ export default function NearBy() {
                                 <MessageCircle className="w-4 h-4" />
                               </Button>
                               <Button
-                                variant={person.isFollowing ? "outline" : "default"}
+                                variant={person.isFollowing ? 'outline' : 'default'}
                                 size="sm"
                                 className={cn(
-                                  "rounded-full h-9",
-                                  !person.isFollowing && "gradient-primary"
+                                  'rounded-full h-9',
+                                  !person.isFollowing && 'gradient-primary'
                                 )}
                                 onClick={() => handleFollow(person.id)}
                               >
                                 {person.isFollowing ? (
-                                  isRTL ? 'متابَع' : 'Following'
+                                  isRTL ? (
+                                    'متابَع'
+                                  ) : (
+                                    'Following'
+                                  )
                                 ) : (
                                   <>
                                     <UserPlus className="w-4 h-4 mr-1" />
@@ -283,19 +333,17 @@ export default function NearBy() {
                       </Card>
                     </motion.div>
                   ))}
-                  
+
                   {nearbyUsers.length === 0 && !isSearching && (
                     <div className="text-center py-12">
                       <Users className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
                       <p className="text-muted-foreground">
-                        {isRTL 
+                        {isRTL
                           ? 'لا يوجد أشخاص قريبين في هذا النطاق'
                           : 'No people found in this range'}
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {isRTL 
-                          ? 'جرب زيادة نطاق البحث'
-                          : 'Try increasing the search radius'}
+                        {isRTL ? 'جرب زيادة نطاق البحث' : 'Try increasing the search radius'}
                       </p>
                     </div>
                   )}

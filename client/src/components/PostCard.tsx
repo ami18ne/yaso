@@ -1,38 +1,39 @@
-import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "wouter";
-import { Heart, MessageCircle, Send, Bookmark } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useLikePost, useSavePost, useTogglePostReaction, usePostReactions } from "@/hooks/usePosts";
-import { useComments, useAddComment } from "@/hooks/useComments";
-import ShareDialog from "./ShareDialog";
-import CommentsDialog from "./CommentsDialog";
-import PostOptionsMenu from "./PostOptionsMenu";
-import OptimizedImage from "./OptimizedImage";
-import ImageLightbox from "./ImageLightbox";
-import UserAvatar from "./UserAvatar";
-import VerifiedBadge from "./VerifiedBadge";
-import DoubleTapLike from "./DoubleTapLike";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
-import { formatDistanceToNow } from "date-fns";
-import EditPostDialog from './EditPostDialog';
-import ReactionPicker from "./ReactionPicker";
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import { useAddComment, useComments } from '@/hooks/useComments'
+import { useLikePost, usePostReactions, useSavePost, useTogglePostReaction } from '@/hooks/usePosts'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { cn } from '@/lib/utils'
+import { formatDistanceToNow } from 'date-fns'
+import { Bookmark, Heart, MessageCircle, Send } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'wouter'
+import CommentsDialog from './CommentsDialog'
+import DoubleTapLike from './DoubleTapLike'
+import EditPostDialog from './EditPostDialog'
+import ImageLightbox from './ImageLightbox'
+import OptimizedImage from './OptimizedImage'
+import PostOptionsMenu from './PostOptionsMenu'
+import ReactionPicker from './ReactionPicker'
+import ShareDialog from './ShareDialog'
+import UserAvatar from './UserAvatar'
+import VerifiedBadge from './VerifiedBadge'
 interface PostCardProps {
-  id: string;
-  userId: string;
+  id: string
+  userId: string
   user: {
-    name: string;
-    username: string;
-    avatar?: string;
-    isVerified?: boolean;
-  };
-  image?: string;
-  caption: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  isLiked?: boolean;
-  isSaved?: boolean;
+    name: string
+    username: string
+    avatar?: string
+    isVerified?: boolean
+  }
+  image?: string
+  caption: string
+  likes: number
+  comments: number
+  timestamp: string
+  isLiked?: boolean
+  isSaved?: boolean
 }
 
 export default function PostCard({
@@ -48,143 +49,143 @@ export default function PostCard({
   isSaved = false,
   reactions = [],
 }: PostCardProps) {
-  const [liked, setLiked] = useState(isLiked);
-  const [saved, setSaved] = useState(isSaved);
-  const [likes, setLikes] = useState(initialLikes);
-  const [isLiking, setIsLiking] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [shareDialogOpen, setShareDialogOpen] = useState(false);
-  const [commentsDialogOpen, setCommentsDialogOpen] = useState(false);
-  const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [reactionPickerOpen, setReactionPickerOpen] = useState(false);
-  const likePostMutation = useLikePost();
-  const savePostMutation = useSavePost();
-  const toggleReactionMutation = useTogglePostReaction();
-  const { user: currentUser } = useAuth();
-  const { toast } = useToast();
-  const { data: commentsData = [] } = useComments(id);
-  const addCommentMutation = useAddComment();
-  const { data: postReactions = [] } = usePostReactions(id);
-  const [, setLocation] = useLocation();
+  const [liked, setLiked] = useState(isLiked)
+  const [saved, setSaved] = useState(isSaved)
+  const [likes, setLikes] = useState(initialLikes)
+  const [isLiking, setIsLiking] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [shareDialogOpen, setShareDialogOpen] = useState(false)
+  const [commentsDialogOpen, setCommentsDialogOpen] = useState(false)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [reactionPickerOpen, setReactionPickerOpen] = useState(false)
+  const likePostMutation = useLikePost()
+  const savePostMutation = useSavePost()
+  const toggleReactionMutation = useTogglePostReaction()
+  const { user: currentUser } = useAuth()
+  const { toast } = useToast()
+  const { data: commentsData = [] } = useComments(id)
+  const addCommentMutation = useAddComment()
+  const { data: postReactions = [] } = usePostReactions(id)
+  const [, setLocation] = useLocation()
 
   useEffect(() => {
-    setLiked(isLiked);
-    setSaved(isSaved);
-  }, [isLiked, isSaved]);
+    setLiked(isLiked)
+    setSaved(isSaved)
+  }, [isLiked, isSaved])
 
   const handleLike = useCallback(async () => {
     if (!currentUser) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to like posts",
-        variant: "destructive",
-      });
-      setLocation('/auth');
-      return;
+        title: 'Sign in required',
+        description: 'Please sign in to like posts',
+        variant: 'destructive',
+      })
+      setLocation('/auth')
+      return
     }
 
-    if (isLiking) return;
-    
-    setIsLiking(true);
-    const previousLiked = liked;
-    const previousLikes = likes;
-    
-    setLiked(!previousLiked);
-    setLikes(previousLiked ? previousLikes - 1 : previousLikes + 1);
-    
+    if (isLiking) return
+
+    setIsLiking(true)
+    const previousLiked = liked
+    const previousLikes = likes
+
+    setLiked(!previousLiked)
+    setLikes(previousLiked ? previousLikes - 1 : previousLikes + 1)
+
     try {
-      await likePostMutation.mutateAsync({ postId: id, isLiked: previousLiked });
+      await likePostMutation.mutateAsync({ postId: id, isLiked: previousLiked })
     } catch (error) {
-      setLiked(previousLiked);
-      setLikes(previousLikes);
+      setLiked(previousLiked)
+      setLikes(previousLikes)
       toast({
-        title: "Error",
-        description: "Failed to update like",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to update like',
+        variant: 'destructive',
+      })
     } finally {
-      setIsLiking(false);
+      setIsLiking(false)
     }
-  }, [currentUser, isLiking, liked, likes, id, likePostMutation, toast, setLocation]);
+  }, [currentUser, isLiking, liked, likes, id, likePostMutation, toast, setLocation])
 
   const handleDoubleTapLike = useCallback(() => {
     if (!liked) {
-      handleLike();
+      handleLike()
     }
-  }, [liked, handleLike]);
+  }, [liked, handleLike])
 
   const handleSave = async () => {
     if (!currentUser) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to save posts",
-        variant: "destructive",
-      });
-      setLocation('/auth');
-      return;
+        title: 'Sign in required',
+        description: 'Please sign in to save posts',
+        variant: 'destructive',
+      })
+      setLocation('/auth')
+      return
     }
 
-    if (isSaving) return;
-    
-    setIsSaving(true);
-    const previousSaved = saved;
-    
-    setSaved(!previousSaved);
-    
+    if (isSaving) return
+
+    setIsSaving(true)
+    const previousSaved = saved
+
+    setSaved(!previousSaved)
+
     try {
-      await savePostMutation.mutateAsync({ postId: id, isSaved: previousSaved });
+      await savePostMutation.mutateAsync({ postId: id, isSaved: previousSaved })
     } catch (error) {
-      setSaved(previousSaved);
+      setSaved(previousSaved)
       toast({
-        title: "Error",
-        description: "Failed to save post",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to save post',
+        variant: 'destructive',
+      })
     } finally {
-      setIsSaving(false);
+      setIsSaving(false)
     }
-  };
+  }
 
   const handleAddComment = async (content: string) => {
     if (!currentUser) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to comment",
-        variant: "destructive",
-      });
-      setLocation('/auth');
-      return;
+        title: 'Sign in required',
+        description: 'Please sign in to comment',
+        variant: 'destructive',
+      })
+      setLocation('/auth')
+      return
     }
-    await addCommentMutation.mutateAsync({ postId: id, content });
-  };
+    await addCommentMutation.mutateAsync({ postId: id, content })
+  }
 
   const handleReaction = async (reaction: string) => {
     if (!currentUser) {
       toast({
-        title: "Sign in required",
-        description: "Please sign in to react to posts",
-        variant: "destructive",
-      });
-      setLocation('/auth');
-      return;
+        title: 'Sign in required',
+        description: 'Please sign in to react to posts',
+        variant: 'destructive',
+      })
+      setLocation('/auth')
+      return
     }
 
     try {
-      await toggleReactionMutation.mutateAsync({ postId: id, reaction });
+      await toggleReactionMutation.mutateAsync({ postId: id, reaction })
       toast({
-        title: "Reaction added!",
+        title: 'Reaction added!',
         description: `You reacted with ${reaction}`,
-      });
+      })
     } catch (error) {
-      console.error('Error adding reaction:', error);
+      ErrorLogger.log('Error adding reaction:', error)
     }
-  };
+  }
 
   return (
     <article className="w-full animate-fade-in py-6" data-testid="post-card">
       <div className="px-4 py-0 flex items-center justify-between">
-        <button 
+        <button
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           onClick={() => setLocation(`/profile/${user.username}`)}
         >
@@ -197,20 +198,22 @@ export default function PostCard({
           />
           <div className="text-left">
             <div className="flex items-center gap-1">
-              <h3 className="font-semibold text-sm hover:text-primary transition-colors">{user.username}</h3>
+              <h3 className="font-semibold text-sm hover:text-primary transition-colors">
+                {user.username}
+              </h3>
               {user.isVerified && <VerifiedBadge size="sm" />}
             </div>
-            <p className="text-xs text-muted-foreground">{
-              (() => {
+            <p className="text-xs text-muted-foreground">
+              {(() => {
                 try {
-                  const d = new Date(timestamp);
-                  if (!timestamp || isNaN(d.getTime())) return 'تاريخ غير معروف';
-                  return formatDistanceToNow(d, { addSuffix: true });
+                  const d = new Date(timestamp)
+                  if (!timestamp || isNaN(d.getTime())) return 'تاريخ غير معروف'
+                  return formatDistanceToNow(d, { addSuffix: true })
                 } catch {
-                  return 'تاريخ غير معروف';
+                  return 'تاريخ غير معروف'
                 }
-              })()
-            }</p>
+              })()}
+            </p>
           </div>
         </button>
         <PostOptionsMenu
@@ -223,7 +226,7 @@ export default function PostCard({
 
       {image ? (
         <DoubleTapLike onDoubleTap={handleDoubleTapLike} disabled={!currentUser}>
-          <div 
+          <div
             className="relative w-full aspect-square overflow-hidden cursor-zoom-in rounded-lg hover-lift"
             onClick={() => setLightboxOpen(true)}
             style={{ background: 'transparent' }}
@@ -238,7 +241,9 @@ export default function PostCard({
       ) : (
         <DoubleTapLike onDoubleTap={handleDoubleTapLike} disabled={!currentUser}>
           <div className="relative w-full aspect-[4/3] bg-gradient-to-br from-primary/20 via-purple-500/10 to-pink-500/20 flex items-center justify-center p-4">
-            <p className="text-lg font-medium text-center px-4 leading-relaxed max-w-prose">{caption}</p>
+            <p className="text-lg font-medium text-center px-4 leading-relaxed max-w-prose">
+              {caption}
+            </p>
           </div>
         </DoubleTapLike>
       )}
@@ -253,13 +258,13 @@ export default function PostCard({
               data-testid="button-like-post"
               aria-label={liked ? 'Unlike' : 'Like'}
             >
-              <Heart 
+              <Heart
                 className={cn(
-                  "h-6 w-6 transition-all duration-200",
-                  liked 
-                    ? "text-red-500 fill-red-500 scale-110" 
-                    : "text-foreground group-hover:text-red-500"
-                )} 
+                  'h-6 w-6 transition-all duration-200',
+                  liked
+                    ? 'text-red-500 fill-red-500 scale-110'
+                    : 'text-foreground group-hover:text-red-500'
+                )}
               />
             </button>
             <button
@@ -285,28 +290,31 @@ export default function PostCard({
             data-testid="button-save-post"
             aria-label={saved ? 'Unsave' : 'Save'}
           >
-            <Bookmark 
+            <Bookmark
               className={cn(
-                "h-6 w-6 transition-all duration-200",
-                saved 
-                  ? "text-primary fill-primary scale-110" 
-                  : "text-foreground group-hover:text-primary"
-              )} 
+                'h-6 w-6 transition-all duration-200',
+                saved
+                  ? 'text-primary fill-primary scale-110'
+                  : 'text-foreground group-hover:text-primary'
+              )}
             />
           </button>
         </div>
 
         <div className="space-y-1.5">
           <p className="font-semibold text-sm">{likes.toLocaleString()} likes</p>
-          
+
           {postReactions.length > 0 && (
             <div className="flex items-center gap-2">
               <div className="flex -space-x-1">
                 {Object.entries(
-                  postReactions.reduce((acc, reaction) => {
-                    acc[reaction.reaction] = (acc[reaction.reaction] || 0) + 1;
-                    return acc;
-                  }, {} as Record<string, number>)
+                  postReactions.reduce(
+                    (acc, reaction) => {
+                      acc[reaction.reaction] = (acc[reaction.reaction] || 0) + 1
+                      return acc
+                    },
+                    {} as Record<string, number>
+                  )
                 )
                   .sort(([, a], [, b]) => b - a)
                   .slice(0, 3)
@@ -325,7 +333,7 @@ export default function PostCard({
               </span>
             </div>
           )}
-          
+
           {image && caption && (
             <p className="text-sm leading-relaxed">
               <button
@@ -362,7 +370,7 @@ export default function PostCard({
         open={commentsDialogOpen}
         onOpenChange={setCommentsDialogOpen}
         postId={id}
-        comments={commentsData.map(comment => ({
+        comments={commentsData.map((comment) => ({
           id: comment.id,
           user: {
             name: comment.profiles.full_name || comment.profiles.username,
@@ -372,11 +380,11 @@ export default function PostCard({
           content: comment.content,
           timestamp: (() => {
             try {
-              const d = new Date(comment.created_at);
-              if (!comment.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف';
-              return formatDistanceToNow(d, { addSuffix: true });
+              const d = new Date(comment.created_at)
+              if (!comment.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف'
+              return formatDistanceToNow(d, { addSuffix: true })
             } catch {
-              return 'تاريخ غير معروف';
+              return 'تاريخ غير معروف'
             }
           })(),
         }))}
@@ -406,5 +414,5 @@ export default function PostCard({
         onClose={() => setReactionPickerOpen(false)}
       />
     </article>
-  );
+  )
 }

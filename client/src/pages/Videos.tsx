@@ -1,28 +1,28 @@
-import { useState } from "react";
-import VideoCard from "@/components/VideoCard";
-import CommentsDialog from "@/components/CommentsDialog";
-import ShareDialog from "@/components/ShareDialog";
-import { useVideos } from "@/hooks/useVideos";
-import { logger } from "@/lib/logger";
-import { Play, AlertCircle } from "lucide-react";
+import CommentsDialog from '@/components/CommentsDialog'
+import ShareDialog from '@/components/ShareDialog'
+import VideoCard from '@/components/VideoCard'
+import { useVideos } from '@/hooks/useVideos'
+import { logger } from '@/lib/logger'
+import { AlertCircle, Play } from 'lucide-react'
+import { useState } from 'react'
 
 export default function Videos() {
-  const { data: videos, isLoading, error } = useVideos();
-  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
-  const [showComments, setShowComments] = useState(false);
-  const [showShare, setShowShare] = useState(false);
+  const { data: videos, isLoading, error } = useVideos()
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
+  const [showComments, setShowComments] = useState(false)
+  const [showShare, setShowShare] = useState(false)
 
-  const selectedVideo = videos?.find(v => v.id === selectedVideoId);
+  const selectedVideo = videos?.find((v) => v.id === selectedVideoId)
 
   const handleOpenComments = (videoId: string) => {
-    setSelectedVideoId(videoId);
-    setShowComments(true);
-  };
+    setSelectedVideoId(videoId)
+    setShowComments(true)
+  }
 
   const handleOpenShare = (videoId: string) => {
-    setSelectedVideoId(videoId);
-    setShowShare(true);
-  };
+    setSelectedVideoId(videoId)
+    setShowShare(true)
+  }
 
   if (isLoading) {
     return (
@@ -32,7 +32,7 @@ export default function Videos() {
         </div>
         <p className="text-xs sm:text-sm text-muted-foreground animate-pulse">Loading videos...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -46,7 +46,7 @@ export default function Videos() {
           <p className="text-xs sm:text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!videos || videos.length === 0) {
@@ -62,12 +62,12 @@ export default function Videos() {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <>
-     <h1 className="text-2xl font-bold p-4">T-Shorts</h1>
+      <h1 className="text-2xl font-bold p-4">T-Shorts</h1>
       <div className="h-full overflow-y-scroll snap-y snap-mandatory scrollbar-hide bg-black">
         {videos.map((video) => (
           <VideoCard
@@ -80,7 +80,7 @@ export default function Videos() {
               username: video.profiles.username,
               avatar: video.profiles.avatar_url || undefined,
             }}
-            caption={video.description || ""}
+            caption={video.description || ''}
             likes={video.likes_count || 0}
             comments={video.comments_count || 0}
             isLiked={video.is_liked}
@@ -94,19 +94,19 @@ export default function Videos() {
       <CommentsDialog
         open={showComments}
         onOpenChange={setShowComments}
-        postId={selectedVideoId || ""}
+        postId={selectedVideoId || ''}
         comments={[]}
         onAddComment={async (content, isVoice) => {
-          logger.debug(`Adding comment to video ${selectedVideoId}: ${content}`);
+          logger.debug(`Adding comment to video ${selectedVideoId}: ${content}`)
         }}
       />
 
       <ShareDialog
         open={showShare}
         onOpenChange={setShowShare}
-        postId={selectedVideoId || ""}
+        postId={selectedVideoId || ''}
         postType="video"
       />
     </>
-  );
+  )
 }

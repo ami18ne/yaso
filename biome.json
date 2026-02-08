@@ -32,6 +32,13 @@
     }
   },
   "files": {
-    "include": ["client/src/**/*.{js,jsx,ts,tsx}", "server/**/*.{js,ts}"]
+    "include": [
+      "client/src/**/*.js",
+      "client/src/**/*.jsx",
+      "client/src/**/*.ts",
+      "client/src/**/*.tsx",
+      "server/**/*.js",
+      "server/**/*.ts"
+    ]
   }
 }

@@ -1,9 +1,8 @@
-
-import { FC, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { type FC, useState } from 'react'
 
 const ContactPage: FC = () => {
   const [formData, setFormData] = useState({
@@ -11,18 +10,18 @@ const ContactPage: FC = () => {
     email: '',
     subject: '',
     message: '',
-  });
+  })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('Form submitted:', formData);
+    e.preventDefault()
+    console.log('Form submitted:', formData)
     // Here you can add logic to send the form data to your backend
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 md:p-8">
@@ -101,9 +100,15 @@ const ContactPage: FC = () => {
                 <div>
                   <h3 className="text-lg font-semibold">Socials</h3>
                   <div className="flex space-x-4 mt-2">
-                    <a href="#" className="text-muted-foreground hover:text-primary">X</a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">Instagram</a>
-                    <a href="#" className="text-muted-foreground hover:text-primary">LinkedIn</a>
+                    <a href="#" className="text-muted-foreground hover:text-primary">
+                      X
+                    </a>
+                    <a href="#" className="text-muted-foreground hover:text-primary">
+                      Instagram
+                    </a>
+                    <a href="#" className="text-muted-foreground hover:text-primary">
+                      LinkedIn
+                    </a>
                   </div>
                 </div>
               </div>
@@ -112,7 +117,7 @@ const ContactPage: FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ContactPage;
+export default ContactPage

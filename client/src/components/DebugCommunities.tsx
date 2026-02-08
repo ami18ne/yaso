@@ -1,3 +1,4 @@
+import { ErrorLogger } from '@/lib/errorHandler'
 import { supabase } from '@/lib/supabase'
 import { useEffect, useState } from 'react'
 
@@ -10,7 +11,9 @@ export function DebugCommunities() {
     const debug = async () => {
       try {
         // 1. Check auth
-        const { data: { user } } = await supabase.auth.getUser()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
         console.log('Current user:', user)
         setStatus(`Auth: ${user ? 'Logged in as ' + user.email : 'Not logged in'}`)
 
@@ -22,7 +25,7 @@ export function DebugCommunities() {
           .order('created_at', { ascending: false })
 
         if (fetchError) {
-          console.error('Fetch error:', fetchError)
+          ErrorLogger.log(fetchError, 'DebugCommunitiesFetch')
           setError(fetchError.message)
           setStatus(`Error: ${fetchError.message}`)
           return
@@ -32,7 +35,7 @@ export function DebugCommunities() {
         setCommunities(data || [])
         setStatus(`Success! Found ${data?.length || 0} communities`)
       } catch (err: any) {
-        console.error('Debug error:', err)
+        ErrorLogger.log(err, 'DebugCommunities')
         setError(err.message)
         setStatus(`Exception: ${err.message}`)
       }

@@ -6,7 +6,10 @@ import React from 'react'
 /**
  * Announce to screen readers
  */
-export function announceToScreenReader(message: string, priority: 'polite' | 'assertive' = 'polite') {
+export function announceToScreenReader(
+  message: string,
+  priority: 'polite' | 'assertive' = 'polite'
+) {
   const announcement = document.createElement('div')
   announcement.setAttribute('role', 'status')
   announcement.setAttribute('aria-live', priority)
@@ -56,7 +59,10 @@ export interface AccessibleButtonOptions {
   disabled?: boolean
 }
 
-export function getAccessibleButtonProps(onClick: () => void, options: AccessibleButtonOptions = {}) {
+export function getAccessibleButtonProps(
+  onClick: () => void,
+  options: AccessibleButtonOptions = {}
+) {
   return {
     role: 'button' as const,
     tabIndex: options.disabled ? -1 : 0,
@@ -124,9 +130,7 @@ export function AccessibleFormField({
       React.cloneElement(children as React.ReactElement, {
         id,
         'aria-invalid': !!error,
-        'aria-describedby': [error && errorId, helperText && helperId]
-          .filter(Boolean)
-          .join(' '),
+        'aria-describedby': [error && errorId, helperText && helperId].filter(Boolean).join(' '),
         required,
       })
     ),
@@ -155,8 +159,7 @@ export function useFocusManagement() {
   const focusableElements = React.useRef<HTMLElement[]>([])
 
   const getAllFocusableElements = (container?: HTMLElement) => {
-    const selector =
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    const selector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     const elements = (container || document).querySelectorAll(selector)
     return Array.from(elements) as HTMLElement[]
   }
@@ -177,9 +180,7 @@ export function useFocusManagement() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Tab') return
 
-      const focusedIndex = focusableElements.current.indexOf(
-        document.activeElement as HTMLElement
-      )
+      const focusedIndex = focusableElements.current.indexOf(document.activeElement as HTMLElement)
       const nextIndex = e.shiftKey ? focusedIndex - 1 : focusedIndex + 1
 
       if (nextIndex >= focusableElements.current.length) {
@@ -252,7 +253,7 @@ export function checkAccessibility() {
   // Check for proper heading hierarchy
   let lastLevel = 0
   document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
-    const level = parseInt(heading.tagName[1])
+    const level = Number.parseInt(heading.tagName[1])
     if (level > lastLevel + 1) {
       issues.push(`Heading hierarchy issue: jumping from h${lastLevel} to h${level}`)
     }

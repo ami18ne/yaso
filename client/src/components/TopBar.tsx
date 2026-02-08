@@ -1,41 +1,49 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Home, MessageCircle, PlusCircle, Search, Bell, Video, Users } from "lucide-react";
-import { Link, useLocation } from "wouter";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfiles";
-import { useRTL } from "@/hooks/useRTL";
-import tinarLogo from "/tinar_logo.svg";
-import { cn } from "@/lib/utils";
-import ThemeToggleButton from "./ThemeToggleButton";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfile } from '@/hooks/useProfiles'
+import { useRTL } from '@/hooks/useRTL'
+import { cn } from '@/lib/utils'
+import { Bell, Home, MessageCircle, PlusCircle, Search, Users, Video } from 'lucide-react'
+import { Link, useLocation } from 'wouter'
+import tinarLogo from '/tinar_logo.svg'
+import ThemeToggleButton from './ThemeToggleButton'
 
 export default function TopBar() {
-  const { user } = useAuth();
-  const { data: profile } = useProfile();
-  const isRTL = useRTL();
-  const [location] = useLocation();
+  const { user } = useAuth()
+  const { data: profile } = useProfile()
+  const isRTL = useRTL()
+  const [location] = useLocation()
 
   return (
     <header className="sticky top-0 z-50 w-full glass-strong border-b border-[rgba(255,255,255,0.06)]">
       <div className="container mx-auto px-4">
-        <div className={`flex h-14 md:h-16 items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div
+          className={`flex h-14 md:h-16 items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+        >
           <Link href="/home">
-            <div className={`flex items-center gap-2 cursor-pointer group ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-              <img 
-                src={tinarLogo} 
+            <div
+              className={`flex items-center gap-2 cursor-pointer group ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+            >
+              <img
+                src={tinarLogo}
                 loading="eager"
-                alt="Logo" 
+                alt="Logo"
                 className="h-8 w-8 md:h-9 md:w-9 object-contain transition-transform group-hover:scale-110"
               />
             </div>
           </Link>
 
           <Link href="/search" className="hidden md:block">
-            <div className={`relative w-64 lg:w-80 group ${isRTL ? 'direction-rtl' : 'direction-ltr'}`}>
-              <Search className={`absolute h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2`} />
+            <div
+              className={`relative w-64 lg:w-80 group ${isRTL ? 'direction-rtl' : 'direction-ltr'}`}
+            >
+              <Search
+                className={`absolute h-4 w-4 text-muted-foreground transition-colors group-focus-within:text-primary ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2`}
+              />
               <Input
-                placeholder={isRTL ? "ابحث..." : "Search..."}
+                placeholder={isRTL ? 'ابحث...' : 'Search...'}
                 className={`h-10 ${isRTL ? 'pr-11 text-right' : 'pl-11 text-left'} bg-muted/50 border-transparent hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-full transition-all cursor-pointer`}
                 dir={isRTL ? 'rtl' : 'ltr'}
                 readOnly
@@ -44,15 +52,17 @@ export default function TopBar() {
             </div>
           </Link>
 
-          <div className={`flex items-center gap-1 md:gap-1.5 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-          <ThemeToggleButton />
+          <div
+            className={`flex items-center gap-1 md:gap-1.5 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
+          >
+            <ThemeToggleButton />
             <Link href="/home">
               <Button
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "hidden md:flex h-10 w-10 rounded-full transition-colors",
-                  location === "/home" ? "bg-muted text-primary" : "hover:bg-muted/80"
+                  'hidden md:flex h-10 w-10 rounded-full transition-colors',
+                  location === '/home' ? 'bg-muted text-primary' : 'hover:bg-muted/80'
                 )}
                 data-testid="button-home"
               >
@@ -65,8 +75,10 @@ export default function TopBar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "h-9 w-9 md:h-10 md:w-10 rounded-full transition-colors",
-                  location === "/messages" || location.startsWith("/messages") ? "bg-muted text-primary" : "hover:bg-muted/80"
+                  'h-9 w-9 md:h-10 md:w-10 rounded-full transition-colors',
+                  location === '/messages' || location.startsWith('/messages')
+                    ? 'bg-muted text-primary'
+                    : 'hover:bg-muted/80'
                 )}
                 data-testid="button-messages"
               >
@@ -79,8 +91,8 @@ export default function TopBar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "hidden md:flex h-10 w-10 rounded-full transition-colors",
-                  location === "/communities" ? "bg-muted text-primary" : "hover:bg-muted/80"
+                  'hidden md:flex h-10 w-10 rounded-full transition-colors',
+                  location === '/communities' ? 'bg-muted text-primary' : 'hover:bg-muted/80'
                 )}
                 data-testid="button-communities"
               >
@@ -93,8 +105,10 @@ export default function TopBar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "hidden md:flex h-10 w-10 rounded-full transition-colors",
-                  location === "/" || location === "/videos" ? "bg-muted text-primary" : "hover:bg-muted/80"
+                  'hidden md:flex h-10 w-10 rounded-full transition-colors',
+                  location === '/' || location === '/videos'
+                    ? 'bg-muted text-primary'
+                    : 'hover:bg-muted/80'
                 )}
                 data-testid="button-videos"
               >
@@ -107,8 +121,10 @@ export default function TopBar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "hidden md:flex h-10 w-10 rounded-full transition-colors",
-                  location === "/create" ? "bg-primary/20 text-primary" : "hover:bg-primary/10 text-primary"
+                  'hidden md:flex h-10 w-10 rounded-full transition-colors',
+                  location === '/create'
+                    ? 'bg-primary/20 text-primary'
+                    : 'hover:bg-primary/10 text-primary'
                 )}
                 data-testid="button-create"
               >
@@ -121,8 +137,8 @@ export default function TopBar() {
                 size="icon"
                 variant="ghost"
                 className={cn(
-                  "h-9 w-9 md:h-10 md:w-10 rounded-full transition-colors relative",
-                  location === "/notifications" ? "bg-muted text-primary" : "hover:bg-muted/80"
+                  'h-9 w-9 md:h-10 md:w-10 rounded-full transition-colors relative',
+                  location === '/notifications' ? 'bg-muted text-primary' : 'hover:bg-muted/80'
                 )}
                 data-testid="button-notifications-nav"
               >
@@ -132,9 +148,14 @@ export default function TopBar() {
 
             <Link href="/profile">
               <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-2 ring-primary/30 hover:ring-primary/60 transition-all cursor-pointer">
-                <AvatarImage src={profile?.avatar_url || undefined} alt={profile?.username || "Profile"} />
+                <AvatarImage
+                  src={profile?.avatar_url || undefined}
+                  alt={profile?.username || 'Profile'}
+                />
                 <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white text-xs md:text-sm font-semibold">
-                  {profile?.username?.slice(0, 2).toUpperCase() || user?.email?.slice(0, 2).toUpperCase() || 'ME'}
+                  {profile?.username?.slice(0, 2).toUpperCase() ||
+                    user?.email?.slice(0, 2).toUpperCase() ||
+                    'ME'}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -142,5 +163,5 @@ export default function TopBar() {
         </div>
       </div>
     </header>
-  );
+  )
 }

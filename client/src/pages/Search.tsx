@@ -1,45 +1,52 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Search as SearchIcon, TrendingUp, Users, Hash } from "lucide-react";
-import { useSearchProfiles, useSuggestedProfiles, useFollowUser, useIsFollowing } from "@/hooks/useProfiles";
-import { useTrendingHashtags } from "@/hooks/useHashtags";
-import { logger } from "@/lib/logger";
-import { useRTL } from "@/hooks/useRTL";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { useTrendingHashtags } from '@/hooks/useHashtags'
+import {
+  useFollowUser,
+  useIsFollowing,
+  useSearchProfiles,
+  useSuggestedProfiles,
+} from '@/hooks/useProfiles'
+import { useRTL } from '@/hooks/useRTL'
+import { logger } from '@/lib/logger'
+import { Hash, Search as SearchIcon, TrendingUp, Users } from 'lucide-react'
+import { useState } from 'react'
+import { useLocation } from 'wouter'
 
 export default function Search() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const isRTL = useRTL();
-  
-  const { data: searchResults, isLoading: searchLoading } = useSearchProfiles(searchQuery);
-  const { data: suggestedUsers, isLoading: suggestedLoading } = useSuggestedProfiles();
-  const { data: trendingHashtags, isLoading: hashtagsLoading } = useTrendingHashtags();
-  const followMutation = useFollowUser();
+  const [searchQuery, setSearchQuery] = useState('')
+  const isRTL = useRTL()
+
+  const { data: searchResults, isLoading: searchLoading } = useSearchProfiles(searchQuery)
+  const { data: suggestedUsers, isLoading: suggestedLoading } = useSuggestedProfiles()
+  const { data: trendingHashtags, isLoading: hashtagsLoading } = useTrendingHashtags()
+  const followMutation = useFollowUser()
 
   const handleFollow = async (userId: string, isFollowing: boolean) => {
-    await followMutation.mutateAsync({ userId, isFollowing });
-  };
+    await followMutation.mutateAsync({ userId, isFollowing })
+  }
 
   const formatCount = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count.toString();
-  };
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
+    return count.toString()
+  }
 
   return (
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full">
         <div className="w-full max-w-2xl mx-auto p-4 pb-24 md:pb-8 space-y-6">
           <div className="relative group">
-            <SearchIcon className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors group-focus-within:text-primary`} />
+            <SearchIcon
+              className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground transition-colors group-focus-within:text-primary`}
+            />
             <Input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isRTL ? "ابحث عن المستخدمين، الهاشتاق..." : "Search users, hashtags..."}
+              placeholder={isRTL ? 'ابحث عن المستخدمين، الهاشتاق...' : 'Search users, hashtags...'}
               className={`h-12 ${isRTL ? 'pr-12 text-right' : 'pl-12'} bg-muted/50 border-transparent hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20 rounded-2xl text-base transition-all`}
               dir={isRTL ? 'rtl' : 'ltr'}
               data-testid="input-search-page"
@@ -55,7 +62,10 @@ export default function Search() {
               {searchLoading ? (
                 <div className="space-y-3">
                   {[1, 2, 3].map((i) => (
-                    <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 animate-pulse">
+                    <div
+                      key={i}
+                      className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 animate-pulse"
+                    >
                       <div className="h-12 w-12 rounded-full bg-muted" />
                       <div className="flex-1 space-y-2">
                         <div className="h-4 w-24 bg-muted rounded" />
@@ -67,11 +77,7 @@ export default function Search() {
               ) : searchResults && searchResults.length > 0 ? (
                 <div className="space-y-2">
                   {searchResults.map((user) => (
-                    <UserCard 
-                      key={user.id} 
-                      user={user} 
-                      onFollow={handleFollow}
-                    />
+                    <UserCard key={user.id} user={user} onFollow={handleFollow} />
                   ))}
                 </div>
               ) : (
@@ -80,7 +86,9 @@ export default function Search() {
                     <SearchIcon className="w-8 h-8 text-muted-foreground/50" />
                   </div>
                   <p className="text-muted-foreground">
-                    {isRTL ? `لا يوجد مستخدمين بهذا الاسم "${searchQuery}"` : `No users found for "${searchQuery}"`}
+                    {isRTL
+                      ? `لا يوجد مستخدمين بهذا الاسم "${searchQuery}"`
+                      : `No users found for "${searchQuery}"`}
                   </p>
                 </div>
               )}
@@ -146,7 +154,10 @@ export default function Search() {
                 {suggestedLoading ? (
                   <div className="space-y-2">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 animate-pulse">
+                      <div
+                        key={i}
+                        className="flex items-center gap-3 p-4 rounded-2xl bg-muted/30 animate-pulse"
+                      >
                         <div className="h-12 w-12 rounded-full bg-muted" />
                         <div className="flex-1 space-y-2">
                           <div className="h-4 w-24 bg-muted rounded" />
@@ -158,11 +169,7 @@ export default function Search() {
                 ) : suggestedUsers && suggestedUsers.length > 0 ? (
                   <div className="space-y-2">
                     {suggestedUsers.slice(0, 5).map((user) => (
-                      <UserCard 
-                        key={user.id} 
-                        user={user} 
-                        onFollow={handleFollow}
-                      />
+                      <UserCard key={user.id} user={user} onFollow={handleFollow} />
                     ))}
                   </div>
                 ) : (
@@ -176,31 +183,31 @@ export default function Search() {
         </div>
       </ScrollArea>
     </div>
-  );
+  )
 }
 
-function UserCard({ 
-  user, 
-  onFollow, 
-}: { 
-  user: any; 
-  onFollow: (userId: string, isFollowing: boolean) => void;
+function UserCard({
+  user,
+  onFollow,
+}: {
+  user: any
+  onFollow: (userId: string, isFollowing: boolean) => void
 }) {
-  const { data: isFollowing, isLoading } = useIsFollowing(user.id);
-  const followMutation = useFollowUser();
-  const [, setLocation] = useLocation();
-  const isRTL = useRTL();
+  const { data: isFollowing, isLoading } = useIsFollowing(user.id)
+  const followMutation = useFollowUser()
+  const [, setLocation] = useLocation()
+  const isRTL = useRTL()
 
   const formatCount = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count.toString();
-  };
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
+    return count.toString()
+  }
 
   return (
     <Card className="p-4 bg-card/50 backdrop-blur-sm border-border/50 hover:bg-muted/30 transition-all duration-200 rounded-2xl">
       <div className={`flex items-center justify-between gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-        <button 
+        <button
           className={`flex items-center gap-3 flex-1 text-left hover:opacity-80 transition-opacity ${isRTL ? 'flex-row-reverse text-right' : ''}`}
           onClick={() => setLocation(`/profile/${user.username}`)}
         >
@@ -211,7 +218,9 @@ function UserCard({
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <h3 className="font-semibold truncate hover:text-primary transition-colors">{user.username}</h3>
+            <h3 className="font-semibold truncate hover:text-primary transition-colors">
+              {user.username}
+            </h3>
             {user.full_name && (
               <p className="text-sm text-muted-foreground truncate">{user.full_name}</p>
             )}
@@ -223,16 +232,16 @@ function UserCard({
         <Button
           size="sm"
           className={`rounded-xl px-4 flex-shrink-0 ${
-            isFollowing 
-              ? "bg-muted text-foreground hover:bg-muted/80" 
-              : "gradient-primary hover:opacity-90"
+            isFollowing
+              ? 'bg-muted text-foreground hover:bg-muted/80'
+              : 'gradient-primary hover:opacity-90'
           }`}
           onClick={() => onFollow(user.id, isFollowing || false)}
           disabled={isLoading || followMutation.isPending}
         >
-          {isFollowing ? (isRTL ? 'متابَع' : 'Following') : (isRTL ? 'متابعة' : 'Follow')}
+          {isFollowing ? (isRTL ? 'متابَع' : 'Following') : isRTL ? 'متابعة' : 'Follow'}
         </Button>
       </div>
     </Card>
-  );
+  )
 }

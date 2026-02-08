@@ -1,25 +1,18 @@
-import { useMemo } from "react";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import PostCard from "@/components/PostCard";
-import { usePosts } from "@/hooks/usePosts";
-import { formatDistanceToNow } from "date-fns";
-import { Loader2, ImageOff, Sun, Moon } from "lucide-react";
-import { isVerifiedUser } from "@/lib/verifiedUsers";
-import { useTheme } from "@/contexts/ThemeContext";
-import { Button } from "@/components/ui/button";
+import PostCard from '@/components/PostCard'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { useTheme } from '@/contexts/ThemeContext'
+import { usePosts } from '@/hooks/usePosts'
+import { isVerifiedUser } from '@/lib/verifiedUsers'
+import { formatDistanceToNow } from 'date-fns'
+import { ImageOff, Loader2, Moon, Sun } from 'lucide-react'
+import { Fragment, useMemo } from 'react'
 
 export default function Home() {
-  const { data: posts, isLoading, error } = usePosts();
-  const { theme, setTheme } = useTheme();
+  const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = usePosts()
+  const { theme, setTheme } = useTheme()
 
-  const sortedPosts = useMemo(() => {
-    if (!posts) return [];
-    return [...posts]
-      .filter(p => p.created_at && !isNaN(new Date(p.created_at).getTime()))
-      .sort((a, b) => {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      });
-  }, [posts]);
+  const posts = useMemo(() => data?.pages.flat() ?? [], [data])
 
   if (isLoading) {
     return (
@@ -29,7 +22,7 @@ export default function Home() {
         </div>
         <p className="text-muted-foreground animate-pulse">Loading your feed...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -43,7 +36,7 @@ export default function Home() {
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -57,40 +50,30 @@ export default function Home() {
             </Button>
           </div>
 
-          {sortedPosts && sortedPosts.length > 0 ? (
+          {posts.length > 0 ? (
             <div className="space-y-4 md:space-y-6 md:p-4">
-              {sortedPosts.map((post, index) => {
-                let dateObj = null;
+              {posts.map((post, index) => {
+                // Basic validation for post object
+                if (!post || !post.id || !post.created_at || !post.profiles) {
+                  console.warn('Invalid post object:', post)
+                  return null // Or some placeholder
+                }
+
+                let dateObj, timestampText
                 try {
-                  dateObj = new Date(post.created_at);
+                  dateObj = new Date(post.created_at)
+                  if (isNaN(dateObj.getTime())) throw new Error('Invalid Date')
+                  timestampText = formatDistanceToNow(dateObj, { addSuffix: true })
                 } catch (e) {
-                  console.warn('post.created_at is not convertible to a date:', post.created_at, post);
-                  return (
-                    <div key={post.id} className="p-4 bg-destructive/10 rounded text-destructive">
-                      Invalid or incomplete post data (id: {post.id})
-                    </div>
-                  );
+                  console.warn('Could not parse date or format distance:', post.created_at)
+                  timestampText = 'a while ago'
                 }
-                if (!post.profiles || !post.created_at || isNaN(dateObj.getTime())) {
-                  console.warn('Invalid post (profiles or date):', post);
-                  return (
-                    <div key={post.id} className="p-4 bg-destructive/10 rounded text-destructive">
-                      Invalid or incomplete post data (id: {post.id})
-                    </div>
-                  );
-                }
-                let timestampText = '';
-                try {
-                  timestampText = formatDistanceToNow(dateObj, { addSuffix: true });
-                } catch (e) {
-                  console.warn('formatDistanceToNow failed:', post.created_at, post);
-                  timestampText = 'Unknown date';
-                }
+
                 return (
-                  <div 
-                    key={post.id} 
+                  <div
+                    key={post.id}
                     className="animate-slide-up md:rounded-2xl md:overflow-hidden md:border md:border-border/30 md:bg-card/50 md:backdrop-blur-sm"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    style={{ animationDelay: `${(index % 10) * 50}ms` }}
                   >
                     <PostCard
                       id={post.id}
@@ -110,8 +93,27 @@ export default function Home() {
                       isSaved={post.is_saved}
                     />
                   </div>
-                );
+                )
               })}
+
+              {hasNextPage && (
+                <div className="flex justify-center p-4">
+                  <Button
+                    onClick={() => fetchNextPage()}
+                    disabled={isFetchingNextPage}
+                    variant="outline"
+                    className="w-full md:w-auto"
+                  >
+                    {isFetchingNextPage ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Loading...
+                      </>
+                    ) : (
+                      'Load More'
+                    )}
+                  </Button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center justify-center py-20 px-4">
@@ -129,5 +131,5 @@ export default function Home() {
         </div>
       </ScrollArea>
     </div>
-  );
+  )
 }

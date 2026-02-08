@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from '@testing-library/react'
 import OptimizedImage from '@/components/OptimizedImage'
+import { fireEvent, render, screen } from '@testing-library/react'
 
 describe('OptimizedImage', () => {
   it('renders placeholder and swaps to real image on load', () => {

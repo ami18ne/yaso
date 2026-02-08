@@ -1,6 +1,11 @@
-import { supabase } from './supabase'
+import {
+  extractBucketFromUrl,
+  extractFilePathFromUrl,
+  generateFileName,
+  isFileAllowedInBucket,
+} from '@shared/bucketsConfig'
 import { logger } from './logger'
-import { generateFileName, isFileAllowedInBucket, extractFilePathFromUrl, extractBucketFromUrl } from '@shared/bucketsConfig'
+import { supabase } from './supabase'
 
 export type MediaType = 'image' | 'video' | 'audio'
 
@@ -25,18 +30,16 @@ export async function uploadMedia(
 
     logger.info(`Uploading ${type} to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     // Add cache busting parameter to force fresh image load
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
@@ -53,10 +56,7 @@ export async function uploadMedia(
   }
 }
 
-export async function uploadAvatar(
-  file: File,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadAvatar(file: File, userId: string): Promise<UploadResult> {
   const bucketName = 'avatars'
 
   try {
@@ -68,18 +68,16 @@ export async function uploadAvatar(
 
     logger.info(`Uploading avatar to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '86400',
-        upsert: true,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '86400',
+      upsert: true,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     // Add cache busting parameter to force fresh image load
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
@@ -96,10 +94,7 @@ export async function uploadAvatar(
   }
 }
 
-export async function uploadChatMedia(
-  file: File,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadChatMedia(file: File, userId: string): Promise<UploadResult> {
   const bucketName = 'chat-media'
 
   try {
@@ -111,18 +106,16 @@ export async function uploadChatMedia(
 
     logger.info(`Uploading chat media to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     // Add cache busting parameter to force fresh image load
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
@@ -139,10 +132,7 @@ export async function uploadChatMedia(
   }
 }
 
-export async function uploadVoiceComment(
-  audioBlob: Blob,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadVoiceComment(audioBlob: Blob, userId: string): Promise<UploadResult> {
   const bucketName = 'media-audio'
   const mimeType = audioBlob.type || 'audio/webm'
   const extensionMap: Record<string, string> = {
@@ -160,18 +150,16 @@ export async function uploadVoiceComment(
 
     logger.info(`Uploading voice comment to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
 
@@ -187,10 +175,7 @@ export async function uploadVoiceComment(
   }
 }
 
-export async function uploadShortVideo(
-  file: File,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadShortVideo(file: File, userId: string): Promise<UploadResult> {
   const bucketName = 'short-videos'
 
   try {
@@ -199,18 +184,16 @@ export async function uploadShortVideo(
 
     logger.info(`Uploading short video to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
 
@@ -226,10 +209,7 @@ export async function uploadShortVideo(
   }
 }
 
-export async function uploadVoiceMessage(
-  audioBlob: Blob,
-  userId: string
-): Promise<UploadResult> {
+export async function uploadVoiceMessage(audioBlob: Blob, userId: string): Promise<UploadResult> {
   const bucketName = 'chat-audio'
   const mimeType = audioBlob.type || 'audio/webm'
   const extensionMap: Record<string, string> = {
@@ -251,18 +231,16 @@ export async function uploadVoiceMessage(
 
     logger.info(`Uploading voice message to ${bucketName}:`, fileName)
 
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: false,
-      })
+    const { data, error } = await supabase.storage.from(bucketName).upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
     if (error) throw error
 
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(fileName)
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from(bucketName).getPublicUrl(fileName)
 
     // Add cache busting parameter to force fresh audio load
     const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
@@ -306,9 +284,9 @@ export async function deleteMedia(url: string): Promise<void> {
  * @returns Public URL
  */
 export function getPublicUrl(bucketName: string, filePath: string): string {
-  const { data: { publicUrl } } = supabase.storage
-    .from(bucketName)
-    .getPublicUrl(filePath)
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(bucketName).getPublicUrl(filePath)
   return publicUrl
 }
 
@@ -318,14 +296,9 @@ export function getPublicUrl(bucketName: string, filePath: string): string {
  * @param path - Directory path (optional)
  * @returns Array of files
  */
-export async function listFiles(
-  bucketName: string,
-  path?: string
-): Promise<any[]> {
+export async function listFiles(bucketName: string, path?: string): Promise<any[]> {
   try {
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .list(path)
+    const { data, error } = await supabase.storage.from(bucketName).list(path)
 
     if (error) throw error
     return data || []
@@ -341,14 +314,9 @@ export async function listFiles(
  * @param filePath - Path to the file
  * @returns File blob
  */
-export async function downloadFile(
-  bucketName: string,
-  filePath: string
-): Promise<Blob | null> {
+export async function downloadFile(bucketName: string, filePath: string): Promise<Blob | null> {
   try {
-    const { data, error } = await supabase.storage
-      .from(bucketName)
-      .download(filePath)
+    const { data, error } = await supabase.storage.from(bucketName).download(filePath)
 
     if (error) throw error
     return data
@@ -357,4 +325,3 @@ export async function downloadFile(
     return null
   }
 }
-

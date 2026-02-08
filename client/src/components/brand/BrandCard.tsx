@@ -11,7 +11,8 @@ interface BrandCardProps {
 const variants = {
   default: 'bg-card border border-border/50',
   glass: 'bg-white/5 dark:bg-white/5 backdrop-blur-xl border border-white/10',
-  gradient: 'bg-gradient-to-br from-purple-500/10 via-transparent to-fuchsia-500/10 border border-purple-500/20',
+  gradient:
+    'bg-gradient-to-br from-purple-500/10 via-transparent to-fuchsia-500/10 border border-purple-500/20',
   glow: 'bg-card border border-purple-500/30 shadow-[0_0_15px_rgba(168,85,247,0.15)]',
 }
 

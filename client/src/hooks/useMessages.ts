@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
 
 export interface Message {
   id: string
@@ -49,7 +49,7 @@ export function useConversations() {
           logger.error('Error fetching participant data:', participantError)
           throw participantError
         }
-        
+
         logger.info('Found participant data:', participantData?.length || 0, 'conversations')
 
         if (!participantData || participantData.length === 0) {
@@ -72,7 +72,11 @@ export function useConversations() {
                 .limit(1)
 
               if (messagesError) {
-                logger.error('Error fetching messages for conversation:', participant.conversation_id, messagesError)
+                logger.error(
+                  'Error fetching messages for conversation:',
+                  participant.conversation_id,
+                  messagesError
+                )
               }
 
               // Get other participant's user_id
@@ -89,7 +93,10 @@ export function useConversations() {
               const otherUserId = otherParticipants?.[0]?.user_id
 
               if (!otherUserId) {
-                logger.warn('No other participant found for conversation', participant.conversation_id)
+                logger.warn(
+                  'No other participant found for conversation',
+                  participant.conversation_id
+                )
                 return null
               }
 
@@ -100,7 +107,7 @@ export function useConversations() {
                 .from('profiles')
                 .select('id, username, full_name, avatar_url')
                 .eq('id', otherUserId)
-                .maybeSingle()  // Changed from single() to maybeSingle() to handle not found gracefully
+                .maybeSingle() // Changed from single() to maybeSingle() to handle not found gracefully
 
               if (profileError) {
                 logger.error('Error fetching profile for user', otherUserId, ':', profileError)
@@ -114,7 +121,12 @@ export function useConversations() {
 
               const lastMessage = messages?.[0]
 
-              logger.info('Successfully enriched conversation:', participant.conversation_id, 'with user:', profile.username)
+              logger.info(
+                'Successfully enriched conversation:',
+                participant.conversation_id,
+                'with user:',
+                profile.username
+              )
 
               return {
                 conversation_id: participant.conversation_id,
@@ -125,7 +137,11 @@ export function useConversations() {
                 last_message: lastMessage,
               }
             } catch (conversationError) {
-              logger.error('Error processing conversation:', conversationError, participant.conversation_id)
+              logger.error(
+                'Error processing conversation:',
+                conversationError,
+                participant.conversation_id
+              )
               return null
             }
           })
@@ -133,8 +149,14 @@ export function useConversations() {
 
         // Filter out any null entries (failed conversation enrichments)
         const validConversations = enrichedConversations.filter((conv) => conv !== null)
-        logger.info('Successfully enriched', validConversations.length, 'out of', enrichedConversations.length, 'conversations')
-        
+        logger.info(
+          'Successfully enriched',
+          validConversations.length,
+          'out of',
+          enrichedConversations.length,
+          'conversations'
+        )
+
         return validConversations
       } catch (error) {
         logger.error('Error fetching conversations:', error)
@@ -175,7 +197,10 @@ export function useSendMessage() {
   const { toast } = useToast()
 
   return useMutation({
-    mutationFn: async ({ conversationId, content }: { conversationId: string; content: string }) => {
+    mutationFn: async ({
+      conversationId,
+      content,
+    }: { conversationId: string; content: string }) => {
       try {
         if (!user) throw new Error('Must be logged in to send messages')
 
@@ -198,7 +223,9 @@ export function useSendMessage() {
         return await response.json()
       } catch (error) {
         logger.error('Error in useSendMessage:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while sending the message')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while sending the message')
       }
     },
     onSuccess: (_, variables) => {

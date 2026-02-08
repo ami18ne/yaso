@@ -1,23 +1,23 @@
-import { useState, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Video, X, Upload, Wand2, Film } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useLocation } from "wouter"
-import { useAuth } from "@/contexts/AuthContext"
-import { useLanguage } from "@/contexts/LanguageContext"
-import { supabase } from "@/lib/supabase"
-import { logger } from "@/lib/logger"
-import MediaEditor from "@/components/MediaEditor"
-import type { MusicTrack } from "@/lib/musicLibrary"
+import MediaEditor from '@/components/MediaEditor'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/contexts/AuthContext'
+import { useLanguage } from '@/contexts/LanguageContext'
+import { useToast } from '@/hooks/use-toast'
+import { logger } from '@/lib/logger'
+import type { MusicTrack } from '@/lib/musicLibrary'
+import { supabase } from '@/lib/supabase'
+import { Film, Upload, Video, Wand2, X } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { useLocation } from 'wouter'
 
 export default function CreateVideo() {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [showEditor, setShowEditor] = useState(false)
@@ -35,18 +35,20 @@ export default function CreateVideo() {
 
     if (!file.type.startsWith('video/')) {
       toast({
-        title: isRTL ? "نوع ملف غير صالح" : "Invalid file type",
-        description: isRTL ? "يرجى اختيار ملف فيديو" : "Please select a video file.",
-        variant: "destructive",
+        title: isRTL ? 'نوع ملف غير صالح' : 'Invalid file type',
+        description: isRTL ? 'يرجى اختيار ملف فيديو' : 'Please select a video file.',
+        variant: 'destructive',
       })
       return
     }
 
     if (file.size > 100 * 1024 * 1024) {
       toast({
-        title: isRTL ? "الملف كبير جداً" : "File too large",
-        description: isRTL ? "الفيديو يجب أن يكون أقل من 100 ميجابايت" : "Video must be less than 100MB.",
-        variant: "destructive",
+        title: isRTL ? 'الملف كبير جداً' : 'File too large',
+        description: isRTL
+          ? 'الفيديو يجب أن يكون أقل من 100 ميجابايت'
+          : 'Video must be less than 100MB.',
+        variant: 'destructive',
       })
       return
     }
@@ -68,8 +70,8 @@ export default function CreateVideo() {
     setProcessedFile(file)
     setShowEditor(false)
     toast({
-      title: isRTL ? "تم التعديل!" : "Edited!",
-      description: isRTL ? "تم تطبيق التعديلات بنجاح" : "Your edits have been applied",
+      title: isRTL ? 'تم التعديل!' : 'Edited!',
+      description: isRTL ? 'تم تطبيق التعديلات بنجاح' : 'Your edits have been applied',
     })
   }
 
@@ -80,18 +82,20 @@ export default function CreateVideo() {
   const handlePost = async () => {
     if (!title.trim()) {
       toast({
-        title: isRTL ? "العنوان مطلوب" : "Title required",
-        description: isRTL ? "يرجى إضافة عنوان للفيديو" : "Please add a title to your video.",
-        variant: "destructive",
+        title: isRTL ? 'العنوان مطلوب' : 'Title required',
+        description: isRTL ? 'يرجى إضافة عنوان للفيديو' : 'Please add a title to your video.',
+        variant: 'destructive',
       })
       return
     }
 
     if (!user) {
       toast({
-        title: isRTL ? "غير مسجل الدخول" : "Not logged in",
-        description: isRTL ? "يجب تسجيل الدخول لنشر فيديو" : "You must be logged in to post a video.",
-        variant: "destructive",
+        title: isRTL ? 'غير مسجل الدخول' : 'Not logged in',
+        description: isRTL
+          ? 'يجب تسجيل الدخول لنشر فيديو'
+          : 'You must be logged in to post a video.',
+        variant: 'destructive',
       })
       return
     }
@@ -99,9 +103,9 @@ export default function CreateVideo() {
     const fileToUpload = processedFile || selectedFile
     if (!fileToUpload) {
       toast({
-        title: isRTL ? "لا يوجد فيديو" : "No video",
-        description: isRTL ? "يرجى اختيار فيديو للنشر" : "Please select a video to post.",
-        variant: "destructive",
+        title: isRTL ? 'لا يوجد فيديو' : 'No video',
+        description: isRTL ? 'يرجى اختيار فيديو للنشر' : 'Please select a video to post.',
+        variant: 'destructive',
       })
       return
     }
@@ -109,47 +113,47 @@ export default function CreateVideo() {
     try {
       setIsUploading(true)
 
-      const formData = new FormData();
-      formData.append('video', fileToUpload);
+      const formData = new FormData()
+      formData.append('video', fileToUpload)
 
       const response = await fetch('/api/videos/upload', {
         method: 'POST',
         body: formData,
-      });
+      })
 
-      const uploadResult = await response.json();
+      const uploadResult = await response.json()
 
       if (!response.ok) {
-        throw new Error(uploadResult.error || 'Failed to upload video');
+        throw new Error(uploadResult.error || 'Failed to upload video')
       }
 
-      const publicUrl = uploadResult.url;
+      const publicUrl = uploadResult.url
 
-      const { error: insertError } = await supabase
-        .from('videos')
-        .insert([{
+      const { error: insertError } = await supabase.from('videos').insert([
+        {
           user_id: user.id,
           title: title.trim(),
           description: description.trim() || null,
           video_url: publicUrl,
-        }])
+        },
+      ])
 
       if (insertError) throw insertError
 
       toast({
-        title: isRTL ? "تم النشر!" : "Posted!",
-        description: isRTL ? "تم نشر الفيديو بنجاح" : "Your video has been shared successfully.",
+        title: isRTL ? 'تم النشر!' : 'Posted!',
+        description: isRTL ? 'تم نشر الفيديو بنجاح' : 'Your video has been shared successfully.',
       })
 
       setTimeout(() => {
-        setLocation("/videos")
+        setLocation('/videos')
       }, 500)
     } catch (error) {
-      logger.error("Error creating video post:", error)
+      logger.error('Error creating video post:', error)
       toast({
-        title: isRTL ? "خطأ" : "Error",
-        description: isRTL ? "فشل في نشر الفيديو" : "Failed to post video. Please try again.",
-        variant: "destructive",
+        title: isRTL ? 'خطأ' : 'Error',
+        description: isRTL ? 'فشل في نشر الفيديو' : 'Failed to post video. Please try again.',
+        variant: 'destructive',
       })
     } finally {
       setIsUploading(false)
@@ -175,9 +179,7 @@ export default function CreateVideo() {
         <div className="w-full max-w-2xl mx-auto p-4 pb-24 md:pb-8">
           <div className="flex items-center gap-2 mb-6">
             <Film className="w-6 h-6 text-primary" />
-            <h1 className="text-2xl font-bold">
-              {isRTL ? 'نشر فيديو' : 'Create Video'}
-            </h1>
+            <h1 className="text-2xl font-bold">{isRTL ? 'نشر فيديو' : 'Create Video'}</h1>
           </div>
 
           <Card className="p-5 bg-card/50 backdrop-blur-sm border-border/50 rounded-2xl">
@@ -186,13 +188,17 @@ export default function CreateVideo() {
                 <Avatar className="h-11 w-11 ring-2 ring-border/50">
                   <AvatarImage src={user?.user_metadata?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-br from-primary to-purple-600 text-white font-semibold">
-                    {user?.email?.slice(0, 2).toUpperCase() || "ME"}
+                    {user?.email?.slice(0, 2).toUpperCase() || 'ME'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="font-semibold">{user?.user_metadata?.username || user?.email?.split('@')[0] || "Your Account"}</h3>
+                  <h3 className="font-semibold">
+                    {user?.user_metadata?.username || user?.email?.split('@')[0] || 'Your Account'}
+                  </h3>
                   <p className="text-sm text-muted-foreground">
-                    {isRTL ? 'شارك فيديو مع الفلاتر والموسيقى' : 'Share a video with filters and music'}
+                    {isRTL
+                      ? 'شارك فيديو مع الفلاتر والموسيقى'
+                      : 'Share a video with filters and music'}
                   </p>
                 </div>
               </div>
@@ -205,11 +211,7 @@ export default function CreateVideo() {
                   >
                     <X className="h-4 w-4 text-white" />
                   </button>
-                  <video 
-                    src={previewUrl} 
-                    className="w-full h-full object-cover"
-                    controls
-                  />
+                  <video src={previewUrl} className="w-full h-full object-cover" controls />
                   {processedFile && (
                     <div className="absolute bottom-3 left-3 bg-primary/90 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                       <Wand2 className="h-3 w-3" />
@@ -259,13 +261,11 @@ export default function CreateVideo() {
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    {isRTL ? 'العنوان' : 'Title'}
-                  </label>
+                  <label className="text-sm font-medium">{isRTL ? 'العنوان' : 'Title'}</label>
                   <Input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder={isRTL ? "أدخل عنوان الفيديو..." : "Enter video title..."}
+                    placeholder={isRTL ? 'أدخل عنوان الفيديو...' : 'Enter video title...'}
                     className="bg-muted/50 border-border/50 focus:border-primary rounded-xl"
                   />
                 </div>
@@ -277,7 +277,7 @@ export default function CreateVideo() {
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder={isRTL ? "أضف وصفاً للفيديو..." : "Add a description..."}
+                    placeholder={isRTL ? 'أضف وصفاً للفيديو...' : 'Add a description...'}
                     className="min-h-24 bg-muted/50 border-border/50 focus:border-primary rounded-xl resize-none"
                   />
                 </div>
@@ -306,9 +306,9 @@ export default function CreateVideo() {
                   className="h-11 px-6 rounded-xl"
                   onClick={() => {
                     handleRemoveMedia()
-                    setTitle("")
-                    setDescription("")
-                    setLocation("/")
+                    setTitle('')
+                    setDescription('')
+                    setLocation('/')
                   }}
                 >
                   {isRTL ? 'إلغاء' : 'Cancel'}

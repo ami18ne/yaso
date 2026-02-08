@@ -18,11 +18,11 @@ export function escapeHtml(text: string): string {
 export function sanitizeUrl(url: string): string {
   try {
     const parsed = new URL(url)
-    
+
     if (!['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol)) {
       return '#'
     }
-    
+
     return url
   } catch {
     if (url.startsWith('/') && !url.startsWith('//')) {
@@ -55,7 +55,7 @@ export function validateUsername(username: string): { valid: boolean; error?: st
 
 export function validatePassword(password: string): { valid: boolean; errors: string[] } {
   const errors: string[] = []
-  
+
   if (password.length < 8) {
     errors.push('Password must be at least 8 characters')
   }
@@ -68,7 +68,7 @@ export function validatePassword(password: string): { valid: boolean; errors: st
   if (!/[0-9]/.test(password)) {
     errors.push('Password must contain at least one number')
   }
-  
+
   return { valid: errors.length === 0, errors }
 }
 
@@ -80,7 +80,7 @@ export function sanitizeFileName(name: string): string {
 }
 
 export function validateFileType(file: File, allowedTypes: string[]): boolean {
-  return allowedTypes.some(type => {
+  return allowedTypes.some((type) => {
     if (type.endsWith('/*')) {
       return file.type.startsWith(type.slice(0, -1))
     }
@@ -95,14 +95,14 @@ export function validateFileSize(file: File, maxSizeInMB: number): boolean {
 export function generateNonce(): string {
   const array = new Uint8Array(16)
   crypto.getRandomValues(array)
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 export function hashString(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
-    hash = ((hash << 5) - hash) + char
+    hash = (hash << 5) - hash + char
     hash = hash & hash
   }
   return Math.abs(hash)
@@ -111,11 +111,10 @@ export function hashString(str: string): number {
 export function obfuscateEmail(email: string): string {
   const [name, domain] = email.split('@')
   if (!domain) return email
-  
-  const obfuscatedName = name.length > 2 
-    ? name[0] + '*'.repeat(name.length - 2) + name[name.length - 1]
-    : name[0] + '*'
-    
+
+  const obfuscatedName =
+    name.length > 2 ? name[0] + '*'.repeat(name.length - 2) + name[name.length - 1] : name[0] + '*'
+
   return `${obfuscatedName}@${domain}`
 }
 
@@ -139,8 +138,8 @@ export function detectXSS(input: string): boolean {
     /expression\s*\(/gi,
     /vbscript:/gi,
   ]
-  
-  return xssPatterns.some(pattern => pattern.test(input))
+
+  return xssPatterns.some((pattern) => pattern.test(input))
 }
 
 let csrfToken: string | null = null
@@ -156,17 +155,17 @@ export function setCSRFToken(token: string) {
   csrfToken = token
 }
 
-export function maskSensitiveData(data: string, visibleChars: number = 4): string {
+export function maskSensitiveData(data: string, visibleChars = 4): string {
   if (!data || data.length <= visibleChars) return data
   const visible = data.slice(-visibleChars)
   const masked = '*'.repeat(Math.min(data.length - visibleChars, 10))
   return masked + visible
 }
 
-export function generateSecureToken(length: number = 32): string {
+export function generateSecureToken(length = 32): string {
   const array = new Uint8Array(length)
   crypto.getRandomValues(array)
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('')
+  return Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('')
 }
 
 export function secureCompare(a: string, b: string): boolean {

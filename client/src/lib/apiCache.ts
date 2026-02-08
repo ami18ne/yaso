@@ -60,11 +60,7 @@ export class APICache {
   /**
    * Set cache with TTL
    */
-  set<T>(
-    endpoint: string,
-    data: T,
-    options: CacheOptions = {}
-  ): void {
+  set<T>(endpoint: string, data: T, options: CacheOptions = {}): void {
     const key = options.key || this.generateKey(endpoint)
     const ttl = options.ttl ?? this.defaultTTL
 
@@ -204,7 +200,7 @@ export const apiCache = new APICache()
 /**
  * React hook for cached API requests
  */
-import { useEffect, useState, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface UseCachedFetchOptions extends CacheOptions {
   enabled?: boolean

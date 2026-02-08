@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express'
+import type { NextFunction, Request, Response } from 'express'
 import rateLimit from 'express-rate-limit'
 import helmet from 'helmet'
 import hpp from 'hpp'
@@ -7,21 +7,35 @@ export const securityHeaders = helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://apis.google.com", "https://*.supabase.co"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      imgSrc: ["'self'", "data:", "blob:", "https:", "http:"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
-      connectSrc: ["'self'", "https://*.supabase.co", "wss://*.supabase.co", "https://apis.google.com", "ws:", "wss:"],
-      mediaSrc: ["'self'", "blob:", "https://*.supabase.co", "https:"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'",
+        "'unsafe-eval'",
+        'https://apis.google.com',
+        'https://*.supabase.co',
+        'https://cdn.jsdelivr.net',
+      ],
+      styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:', 'http:'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      connectSrc: [
+        "'self'",
+        'https://*.supabase.co',
+        'wss://*.supabase.co',
+        'https://apis.google.com',
+        'ws:',
+        'wss:',
+      ],
+      mediaSrc: ["'self'", 'blob:', 'https://*.supabase.co', 'https:'],
       objectSrc: ["'none'"],
-      frameSrc: ["'self'", "https://accounts.google.com", "https://*.supabase.co"],
-      frameAncestors: ["'self'", "https://*.replit.dev", "https://*.replit.app"],
+      frameSrc: ["'self'", 'https://accounts.google.com', 'https://*.supabase.co'],
+      frameAncestors: ["'self'", 'https://*.replit.dev', 'https://*.replit.app'],
       upgradeInsecureRequests: [],
     },
   },
   crossOriginEmbedderPolicy: false,
-  crossOriginResourcePolicy: { policy: "cross-origin" },
-  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
 })
 
 export const apiLimiter = rateLimit({
@@ -70,11 +84,11 @@ function sanitizeObject(obj: any): any {
   if (typeof obj !== 'object' || obj === null) {
     return sanitizeValue(obj)
   }
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeObject(item))
+    return obj.map((item) => sanitizeObject(item))
   }
-  
+
   const sanitized: any = {}
   for (const key of Object.keys(obj)) {
     if (key.startsWith('$') || key.includes('.')) {
@@ -100,11 +114,11 @@ export function securityErrorHandler(err: any, req: Request, res: Response, next
   if (err.code === 'EBADCSRFTOKEN') {
     return res.status(403).json({ error: 'Invalid or expired security token' })
   }
-  
+
   if (err.type === 'entity.too.large') {
     return res.status(413).json({ error: 'Request payload too large' })
   }
-  
+
   next(err)
 }
 
@@ -116,9 +130,12 @@ export function noCache(_req: Request, res: Response, next: NextFunction) {
   next()
 }
 
-export function apiCacheControl(maxAge: number = 60) {
+export function apiCacheControl(maxAge = 60) {
   return (_req: Request, res: Response, next: NextFunction) => {
-    res.setHeader('Cache-Control', `public, max-age=${maxAge}, stale-while-revalidate=${maxAge * 2}`)
+    res.setHeader(
+      'Cache-Control',
+      `public, max-age=${maxAge}, stale-while-revalidate=${maxAge * 2}`
+    )
     next()
   }
 }

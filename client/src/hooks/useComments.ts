@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface CommentProfile {
   username: string
@@ -53,8 +53,10 @@ export function useAddComment() {
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
         if (!user) {
           throw new Error('You must be logged in to comment')
         }
@@ -73,13 +75,15 @@ export function useAddComment() {
         return data
       } catch (error) {
         logger.error('Error in useAddComment:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while posting the comment')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while posting the comment')
       }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['comments', variables.postId] })
       queryClient.invalidateQueries({ queryKey: ['posts'] })
-      
+
       toast({
         title: 'Comment posted!',
         description: 'Your comment has been added.',

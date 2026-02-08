@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { useStories } from "@/hooks/useStories";
-import { useAuth } from "@/contexts/AuthContext";
-import { useProfile } from "@/hooks/useProfiles";
-import StoryViewer from "./StoryViewer";
-import AddStoryDialog from "./AddStoryDialog";
-import UserAvatar from "./UserAvatar";
-import { cn } from "@/lib/utils";
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { useAuth } from '@/contexts/AuthContext'
+import { useProfile } from '@/hooks/useProfiles'
+import { useStories } from '@/hooks/useStories'
+import { cn } from '@/lib/utils'
+import { Plus } from 'lucide-react'
+import { useState } from 'react'
+import AddStoryDialog from './AddStoryDialog'
+import StoryViewer from './StoryViewer'
+import UserAvatar from './UserAvatar'
 
 export default function StoryBar() {
-  const { data: stories = [], isLoading } = useStories();
-  const { user } = useAuth();
-  const { data: profile } = useProfile();
-  const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null);
-  const [addStoryOpen, setAddStoryOpen] = useState(false);
+  const { data: stories = [], isLoading } = useStories()
+  const { user } = useAuth()
+  const { data: profile } = useProfile()
+  const [viewingStoryIndex, setViewingStoryIndex] = useState<number | null>(null)
+  const [addStoryOpen, setAddStoryOpen] = useState(false)
 
   if (isLoading) {
     return (
@@ -28,7 +28,7 @@ export default function StoryBar() {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -87,5 +87,5 @@ export default function StoryBar() {
 
       <AddStoryDialog open={addStoryOpen} onOpenChange={setAddStoryOpen} />
     </div>
-  );
+  )
 }

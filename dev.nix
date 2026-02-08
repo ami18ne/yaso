@@ -1,11 +1,33 @@
 { pkgs }:
 {
   # We need to add nodejs and npm to our environment
-  packages = [ pkgs.nodejs ];
+  packages = [
+    pkgs.nodejs,
+    # Add system dependencies for Playwright
+    pkgs.glib.out,
+    pkgs.nss.out,
+    pkgs.cups.lib,
+    pkgs.dbus.lib,
+    pkgs.xorg.libX11.out,
+    pkgs.xorg.libXcomposite.out,
+    pkgs.xorg.libXdamage.out,
+    pkgs.xorg.libXext.out,
+    pkgs.xorg.libXfixes.out,
+    pkgs.xorg.libXrandr.out,
+    pkgs.xorg.libXtst.out,
+    pkgs.gconf,
+    pkgs.alsa-lib.out,
+    pkgs.pango.out,
+    pkgs.cairo.out,
+    pkgs.atk.out,
+    pkgs.gtk3.out
+  ];
+
   # We can also add a command to run on startup
   startup = {
-    command = "npm run dev";
+    command = "npm install && npm run dev";
   };
+
   # And we can configure the preview
   previews = [
     {

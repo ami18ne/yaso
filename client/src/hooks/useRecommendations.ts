@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
+import { useQuery } from '@tanstack/react-query'
 
 interface RecommendedPost {
   id: string
@@ -47,7 +47,7 @@ const INTERACTION_WEIGHTS = {
   view: 1,
 }
 
-export function useRecommendedPosts(limit: number = 20) {
+export function useRecommendedPosts(limit = 20) {
   const { user } = useAuth()
 
   return useQuery({
@@ -60,7 +60,7 @@ export function useRecommendedPosts(limit: number = 20) {
         .select('post_id')
         .eq('user_id', user.id)
 
-      const likedPostIds = (userLikes || []).map(l => l.post_id)
+      const likedPostIds = (userLikes || []).map((l) => l.post_id)
 
       const { data: similarUsers } = await supabase
         .from('post_likes')
@@ -69,10 +69,10 @@ export function useRecommendedPosts(limit: number = 20) {
         .neq('user_id', user.id)
         .limit(30)
 
-      const similarUserIds = Array.from(new Set((similarUsers || []).map(u => u.user_id)))
+      const similarUserIds = Array.from(new Set((similarUsers || []).map((u) => u.user_id)))
 
       let recommendedPostIds: string[] = []
-      
+
       if (similarUserIds.length > 0) {
         const { data: recommendedFromSimilar } = await supabase
           .from('post_likes')
@@ -81,7 +81,7 @@ export function useRecommendedPosts(limit: number = 20) {
           .limit(limit * 2)
 
         const postScores = new Map<string, number>()
-        ;(recommendedFromSimilar || []).forEach(p => {
+        ;(recommendedFromSimilar || []).forEach((p) => {
           if (!likedPostIds.includes(p.post_id)) {
             const current = postScores.get(p.post_id) || 0
             postScores.set(p.post_id, current + 1)
@@ -102,7 +102,7 @@ export function useRecommendedPosts(limit: number = 20) {
           .order('likes_count', { ascending: false })
           .limit(limit - recommendedPostIds.length)
 
-        recommendedPostIds.push(...(trendingPosts || []).map(p => p.id))
+        recommendedPostIds.push(...(trendingPosts || []).map((p) => p.id))
       }
 
       if (recommendedPostIds.length === 0) return []
@@ -124,7 +124,7 @@ export function useRecommendedPosts(limit: number = 20) {
       if (error) throw error
       return (posts || []).map((p: any) => ({
         ...p,
-        profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
+        profiles: Array.isArray(p.profiles) ? p.profiles[0] : p.profiles,
       })) as RecommendedPost[]
     },
     enabled: !!user,
@@ -132,7 +132,7 @@ export function useRecommendedPosts(limit: number = 20) {
   })
 }
 
-export function useRecommendedUsers(limit: number = 10) {
+export function useRecommendedUsers(limit = 10) {
   const { user } = useAuth()
 
   return useQuery({
@@ -145,7 +145,7 @@ export function useRecommendedUsers(limit: number = 10) {
         .select('following_id')
         .eq('follower_id', user.id)
 
-      const followingIds = (following || []).map(f => f.following_id)
+      const followingIds = (following || []).map((f) => f.following_id)
 
       const { data: friendsOfFriends } = await supabase
         .from('follows')
@@ -154,7 +154,7 @@ export function useRecommendedUsers(limit: number = 10) {
         .limit(50)
 
       const userScores = new Map<string, number>()
-      ;(friendsOfFriends || []).forEach(f => {
+      ;(friendsOfFriends || []).forEach((f) => {
         if (!followingIds.includes(f.following_id) && f.following_id !== user.id) {
           const current = userScores.get(f.following_id) || 0
           userScores.set(f.following_id, current + 1)
@@ -192,7 +192,7 @@ export function useRecommendedUsers(limit: number = 10) {
   })
 }
 
-export function useRecommendedVideos(limit: number = 20) {
+export function useRecommendedVideos(limit = 20) {
   const { user } = useAuth()
 
   return useQuery({
@@ -205,7 +205,7 @@ export function useRecommendedVideos(limit: number = 20) {
         .select('video_id')
         .eq('user_id', user.id)
 
-      const likedVideoIds = (userLikes || []).map(l => l.video_id)
+      const likedVideoIds = (userLikes || []).map((l) => l.video_id)
 
       const { data: similarUsers } = await supabase
         .from('video_likes')
@@ -214,7 +214,7 @@ export function useRecommendedVideos(limit: number = 20) {
         .neq('user_id', user.id)
         .limit(30)
 
-      const similarUserIds = Array.from(new Set((similarUsers || []).map(u => u.user_id)))
+      const similarUserIds = Array.from(new Set((similarUsers || []).map((u) => u.user_id)))
 
       let recommendedVideoIds: string[] = []
 
@@ -226,7 +226,7 @@ export function useRecommendedVideos(limit: number = 20) {
           .limit(limit * 2)
 
         const videoScores = new Map<string, number>()
-        ;(recommendedFromSimilar || []).forEach(v => {
+        ;(recommendedFromSimilar || []).forEach((v) => {
           if (!likedVideoIds.includes(v.video_id)) {
             const current = videoScores.get(v.video_id) || 0
             videoScores.set(v.video_id, current + 1)
@@ -247,7 +247,7 @@ export function useRecommendedVideos(limit: number = 20) {
           .order('likes_count', { ascending: false })
           .limit(limit - recommendedVideoIds.length)
 
-        recommendedVideoIds.push(...(trendingVideos || []).map(v => v.id))
+        recommendedVideoIds.push(...(trendingVideos || []).map((v) => v.id))
       }
 
       if (recommendedVideoIds.length === 0) {
@@ -268,7 +268,7 @@ export function useRecommendedVideos(limit: number = 20) {
         if (error) throw error
         return (allVideos || []).map((v: any) => ({
           ...v,
-          profiles: Array.isArray(v.profiles) ? v.profiles[0] : v.profiles
+          profiles: Array.isArray(v.profiles) ? v.profiles[0] : v.profiles,
         })) as RecommendedVideo[]
       }
 
@@ -288,7 +288,7 @@ export function useRecommendedVideos(limit: number = 20) {
       if (error) throw error
       return (videos || []).map((v: any) => ({
         ...v,
-        profiles: Array.isArray(v.profiles) ? v.profiles[0] : v.profiles
+        profiles: Array.isArray(v.profiles) ? v.profiles[0] : v.profiles,
       })) as RecommendedVideo[]
     },
     enabled: !!user,
@@ -296,7 +296,7 @@ export function useRecommendedVideos(limit: number = 20) {
   })
 }
 
-export function useForYouFeed(limit: number = 30) {
+export function useForYouFeed(limit = 30) {
   const { user } = useAuth()
 
   return useQuery({
@@ -327,7 +327,7 @@ export function useForYouFeed(limit: number = 30) {
         .select('following_id')
         .eq('follower_id', user.id)
 
-      const followingIds = (following || []).map(f => f.following_id)
+      const followingIds = (following || []).map((f) => f.following_id)
 
       const { data: followingPosts } = await supabase
         .from('posts')
@@ -362,7 +362,7 @@ export function useForYouFeed(limit: number = 30) {
         .limit(Math.floor(limit * 0.4))
 
       const combinedPosts = [...(followingPosts || []), ...(trendingPosts || [])]
-      
+
       for (let i = combinedPosts.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
         ;[combinedPosts[i], combinedPosts[j]] = [combinedPosts[j], combinedPosts[i]]

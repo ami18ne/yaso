@@ -1,32 +1,42 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Share2, Play, Pause, Volume2, VolumeX, Music2, Repeat } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useLikeVideo } from "@/hooks/useVideos";
-import { logger } from "@/lib/logger";
-import { motion, AnimatePresence } from "framer-motion";
-import VerifiedBadge from "./VerifiedBadge";
-import { isVerifiedUser } from "@/lib/verifiedUsers";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
+import { useLikeVideo } from '@/hooks/useVideos'
+import { logger } from '@/lib/logger'
+import { cn } from '@/lib/utils'
+import { isVerifiedUser } from '@/lib/verifiedUsers'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  Heart,
+  MessageCircle,
+  Music2,
+  Pause,
+  Play,
+  Repeat,
+  Share2,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation } from 'wouter'
+import VerifiedBadge from './VerifiedBadge'
 
 interface VideoCardProps {
-  id: string;
-  videoUrl?: string;
-  thumbnailUrl?: string;
+  id: string
+  videoUrl?: string
+  thumbnailUrl?: string
   creator: {
-    name: string;
-    avatar?: string;
-    username: string;
-  };
-  caption: string;
-  likes: number;
-  comments: number;
-  isLiked?: boolean;
-  musicName?: string;
-  onLike?: () => void;
-  onComment?: () => void;
-  onShare?: () => void;
+    name: string
+    avatar?: string
+    username: string
+  }
+  caption: string
+  likes: number
+  comments: number
+  isLiked?: boolean
+  musicName?: string
+  onLike?: () => void
+  onComment?: () => void
+  onShare?: () => void
 }
 
 export default function VideoCard({
@@ -43,119 +53,119 @@ export default function VideoCard({
   onComment,
   onShare,
 }: VideoCardProps) {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(true); // Start muted by default
-  const [localLiked, setLocalLiked] = useState(isLiked);
-  const [localLikes, setLocalLikes] = useState(initialLikes);
-  const [isLiking, setIsLiking] = useState(false);
-  const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const lastTapRef = useRef<number>(0);
-  const likeVideoMutation = useLikeVideo();
-  const [, setLocation] = useLocation();
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [isMuted, setIsMuted] = useState(true) // Start muted by default
+  const [localLiked, setLocalLiked] = useState(isLiked)
+  const [localLikes, setLocalLikes] = useState(initialLikes)
+  const [isLiking, setIsLiking] = useState(false)
+  const [showDoubleTapHeart, setShowDoubleTapHeart] = useState(false)
+  const [progress, setProgress] = useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const lastTapRef = useRef<number>(0)
+  const likeVideoMutation = useLikeVideo()
+  const [, setLocation] = useLocation()
 
   useEffect(() => {
-    setLocalLiked(isLiked);
-  }, [isLiked]);
-  
+    setLocalLiked(isLiked)
+  }, [isLiked])
+
   useEffect(() => {
     if (videoRef.current) {
-        videoRef.current.muted = isMuted;
+      videoRef.current.muted = isMuted
     }
-  }, [isMuted]);
+  }, [isMuted])
 
   useEffect(() => {
-    const video = videoRef.current;
-    const container = containerRef.current;
-    if (!video || !container) return;
+    const video = videoRef.current
+    const container = containerRef.current
+    if (!video || !container) return
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio >= 0.7) {
-            video.play().catch(() => {});
-            setIsPlaying(true);
+            video.play().catch(() => {})
+            setIsPlaying(true)
           } else {
-            video.pause();
-            setIsPlaying(false);
+            video.pause()
+            setIsPlaying(false)
           }
-        });
+        })
       },
       { threshold: [0.7] }
-    );
+    )
 
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [videoUrl]);
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [videoUrl])
 
   const handleDoubleTap = useCallback(() => {
-    const now = Date.now();
-    const DOUBLE_TAP_DELAY = 300;
-    
+    const now = Date.now()
+    const DOUBLE_TAP_DELAY = 300
+
     if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
       if (!localLiked) {
-        handleLike();
+        handleLike()
       }
-      setShowDoubleTapHeart(true);
-      setTimeout(() => setShowDoubleTapHeart(false), 1000);
+      setShowDoubleTapHeart(true)
+      setTimeout(() => setShowDoubleTapHeart(false), 1000)
     }
-    lastTapRef.current = now;
-  }, [localLiked]);
+    lastTapRef.current = now
+  }, [localLiked])
 
   const handleLike = async () => {
-    if (isLiking) return;
-    
-    setIsLiking(true);
-    const previousLiked = localLiked;
-    const previousLikes = localLikes;
-    
-    setLocalLiked(!previousLiked);
-    setLocalLikes(previousLiked ? previousLikes - 1 : previousLikes + 1);
-    
+    if (isLiking) return
+
+    setIsLiking(true)
+    const previousLiked = localLiked
+    const previousLikes = localLikes
+
+    setLocalLiked(!previousLiked)
+    setLocalLikes(previousLiked ? previousLikes - 1 : previousLikes + 1)
+
     try {
-      await likeVideoMutation.mutateAsync({ videoId: id, isLiked: previousLiked });
-      onLike?.();
+      await likeVideoMutation.mutateAsync({ videoId: id, isLiked: previousLiked })
+      onLike?.()
     } catch (error) {
-      setLocalLiked(previousLiked);
-      setLocalLikes(previousLikes);
+      setLocalLiked(previousLiked)
+      setLocalLikes(previousLikes)
     } finally {
-      setIsLiking(false);
+      setIsLiking(false)
     }
-  };
+  }
 
   const handleVideoClick = () => {
     if (videoRef.current) {
       if (isPlaying) {
-        videoRef.current.pause();
+        videoRef.current.pause()
       } else {
-        videoRef.current.play();
+        videoRef.current.play()
       }
-      setIsPlaying(!isPlaying);
+      setIsPlaying(!isPlaying)
     }
   }
 
   const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsMuted(!isMuted);
-  };
+    e.stopPropagation()
+    setIsMuted(!isMuted)
+  }
 
   const handleTimeUpdate = () => {
     if (videoRef.current) {
-      const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100;
-      setProgress(currentProgress);
+      const currentProgress = (videoRef.current.currentTime / videoRef.current.duration) * 100
+      setProgress(currentProgress)
     }
-  };
+  }
 
   const formatCount = (count: number): string => {
     if (count >= 1000000) {
-      return (count / 1000000).toFixed(1) + 'M';
+      return (count / 1000000).toFixed(1) + 'M'
     } else if (count >= 1000) {
-      return (count / 1000).toFixed(1) + 'K';
+      return (count / 1000).toFixed(1) + 'K'
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
   return (
     <div
@@ -166,8 +176,8 @@ export default function VideoCard({
       <div
         className="relative w-full h-full flex items-center justify-center cursor-pointer"
         onClick={() => {
-          handleDoubleTap();
-          handleVideoClick();
+          handleDoubleTap()
+          handleVideoClick()
         }}
       >
         {videoUrl ? (
@@ -216,28 +226,25 @@ export default function VideoCard({
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <AnimatePresence>
-        {!isPlaying && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 1.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.5 }}
-            transition={{ duration: 0.3 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          >
+          {!isPlaying && (
+            <motion.div
+              initial={{ opacity: 0, scale: 1.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.5 }}
+              transition={{ duration: 0.3 }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
               <div className="rounded-full bg-black/50 p-6 backdrop-blur-sm">
                 <Play className="h-12 w-12 text-white fill-white" strokeWidth={1.5} />
               </div>
-          </motion.div>
-        )}
+            </motion.div>
+          )}
         </AnimatePresence>
-        
+
         <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-white/20">
-          <motion.div 
-            className="h-full bg-white"
-            style={{ width: `${progress}%` }}
-          />
+          <motion.div className="h-full bg-white" style={{ width: `${progress}%` }} />
         </div>
 
         <button
@@ -256,11 +263,11 @@ export default function VideoCard({
         <div className="flex items-end gap-4">
           <div className="flex-1 space-y-3 min-w-0">
             <div className="flex items-center gap-3">
-              <button 
+              <button
                 className="flex items-center gap-3"
                 onClick={(e) => {
-                  e.stopPropagation();
-                  setLocation(`/profile/${creator.username}`);
+                  e.stopPropagation()
+                  setLocation(`/profile/${creator.username}`)
                 }}
               >
                 <Avatar className="h-12 w-12 border-2 border-white/80">
@@ -279,7 +286,7 @@ export default function VideoCard({
               </button>
             </div>
             <p className="text-sm leading-relaxed line-clamp-2">{caption}</p>
-            
+
             {musicName && (
               <div className="flex items-center gap-2 text-white/90">
                 <div className="w-5 h-5 rounded-full bg-gray-800/70 flex items-center justify-center animate-spin-slow">
@@ -293,26 +300,26 @@ export default function VideoCard({
           <div className="flex flex-col items-center gap-4">
             <motion.button
               onClick={(e) => {
-                e.stopPropagation();
-                handleLike();
+                e.stopPropagation()
+                handleLike()
               }}
               className="flex flex-col items-center gap-1 group"
               data-testid="button-like-video"
               whileTap={{ scale: 0.9 }}
             >
-              <motion.div 
+              <motion.div
                 className={cn(
-                  "rounded-full p-3 transition-all flex-shrink-0 backdrop-blur-md border",
+                  'rounded-full p-3 transition-all flex-shrink-0 backdrop-blur-md border',
                   localLiked
-                    ? "bg-red-500/80 border-red-500/90"
-                    : "bg-black/20 border-white/10 group-hover:bg-black/30"
+                    ? 'bg-red-500/80 border-red-500/90'
+                    : 'bg-black/20 border-white/10 group-hover:bg-black/30'
                 )}
                 animate={localLiked ? { scale: [1, 1.2, 1] } : {}}
                 transition={{ duration: 0.3 }}
               >
-                <Heart 
-                  className="h-6 w-6 text-white transition-all" 
-                  fill={localLiked ? "currentColor" : "none"}
+                <Heart
+                  className="h-6 w-6 text-white transition-all"
+                  fill={localLiked ? 'currentColor' : 'none'}
                   strokeWidth={2}
                 />
               </motion.div>
@@ -321,9 +328,9 @@ export default function VideoCard({
 
             <button
               onClick={(e) => {
-                e.stopPropagation();
-                onComment?.();
-                logger.debug('Comment clicked');
+                e.stopPropagation()
+                onComment?.()
+                logger.debug('Comment clicked')
               }}
               className="flex flex-col items-center gap-1 group"
               data-testid="button-comment-video"
@@ -333,11 +340,11 @@ export default function VideoCard({
               </div>
               <span className="text-xs font-semibold">{formatCount(comments)}</span>
             </button>
-            
+
             <button
               onClick={(e) => {
-                e.stopPropagation();
-                logger.debug('Remix clicked');
+                e.stopPropagation()
+                logger.debug('Remix clicked')
               }}
               className="flex flex-col items-center gap-1 group"
               data-testid="button-remix-video"
@@ -350,9 +357,9 @@ export default function VideoCard({
 
             <button
               onClick={(e) => {
-                e.stopPropagation();
-                onShare?.();
-                logger.debug('Share clicked');
+                e.stopPropagation()
+                onShare?.()
+                logger.debug('Share clicked')
               }}
               className="flex flex-col items-center gap-1 group"
               data-testid="button-share-video"
@@ -366,5 +373,5 @@ export default function VideoCard({
         </div>
       </div>
     </div>
-  );
+  )
 }

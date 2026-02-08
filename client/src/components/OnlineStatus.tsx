@@ -1,11 +1,11 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
 
 interface OnlineStatusProps {
-  isOnline: boolean;
-  lastSeen?: string;
-  showText?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  isOnline: boolean
+  lastSeen?: string
+  showText?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  className?: string
 }
 
 export default function OnlineStatus({
@@ -19,13 +19,13 @@ export default function OnlineStatus({
     sm: 'w-2 h-2',
     md: 'w-3 h-3',
     lg: 'w-4 h-4',
-  };
+  }
 
   const textSizeClasses = {
     sm: 'text-[10px]',
     md: 'text-xs',
     lg: 'text-sm',
-  };
+  }
 
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
@@ -46,15 +46,12 @@ export default function OnlineStatus({
           />
         )}
       </div>
-      
+
       {showText && (
-        <span className={cn(
-          'text-muted-foreground',
-          textSizeClasses[size]
-        )}>
+        <span className={cn('text-muted-foreground', textSizeClasses[size])}>
           {isOnline ? 'Online' : lastSeen ? `Last seen ${lastSeen}` : 'Offline'}
         </span>
       )}
     </div>
-  );
+  )
 }

@@ -3,20 +3,22 @@
  * Works only in development mode with configurable log levels
  */
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+import { ErrorLogger } from './errorHandler'
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 interface LoggerConfig {
-  enabled: boolean;
+  enabled: boolean
   levels: {
-    debug: boolean;
-    info: boolean;
-    warn: boolean;
-    error: boolean;
-  };
+    debug: boolean
+    info: boolean
+    warn: boolean
+    error: boolean
+  }
 }
 
 class Logger {
-  private config: LoggerConfig;
+  private config: LoggerConfig
 
   constructor() {
     this.config = {
@@ -27,21 +29,21 @@ class Logger {
         warn: true,
         error: true,
       },
-    };
+    }
   }
 
   /**
    * Enable or disable specific log level
    */
   setLevel(level: LogLevel, enabled: boolean): void {
-    this.config.levels[level] = enabled;
+    this.config.levels[level] = enabled
   }
 
   /**
    * Enable or disable all logging
    */
   setEnabled(enabled: boolean): void {
-    this.config.enabled = enabled;
+    this.config.enabled = enabled
   }
 
   /**
@@ -49,7 +51,7 @@ class Logger {
    */
   debug(...args: any[]): void {
     if (this.config.enabled && this.config.levels.debug) {
-      console.log('[DEBUG]', ...args);
+      console.log('[DEBUG]', ...args)
     }
   }
 
@@ -58,7 +60,7 @@ class Logger {
    */
   info(...args: any[]): void {
     if (this.config.enabled && this.config.levels.info) {
-      console.log('[INFO]', ...args);
+      console.log('[INFO]', ...args)
     }
   }
 
@@ -67,18 +69,18 @@ class Logger {
    */
   warn(...args: any[]): void {
     if (this.config.enabled && this.config.levels.warn) {
-      console.warn('[WARN]', ...args);
+      console.warn('[WARN]', ...args)
     }
   }
 
   /**
    * Error level - for error messages
    */
-  error(...args: any[]): void {
+  error(message: string, ...args: any[]): void {
     if (this.config.enabled && this.config.levels.error) {
-      console.error('[ERROR]', ...args);
+      ErrorLogger.log(new Error(message), 'Logger')
     }
   }
 }
 
-export const logger = new Logger();
+export const logger = new Logger()

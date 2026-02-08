@@ -1,19 +1,19 @@
-import { useState, useRef, useEffect } from 'react'
-import { useLocation } from 'wouter'
+import UserAvatar from '@/components/UserAvatar'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Camera } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
-import { useProfile, useUpdateProfile } from '@/hooks/useProfiles'
 import { useToast } from '@/hooks/use-toast'
-import { uploadAvatar } from '@/lib/storage'
-import { logger } from '@/lib/logger'
-import UserAvatar from '@/components/UserAvatar'
+import { useProfile, useUpdateProfile } from '@/hooks/useProfiles'
 import { useRTL } from '@/hooks/useRTL'
+import { logger } from '@/lib/logger'
+import { uploadAvatar } from '@/lib/storage'
+import { Camera } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { useLocation } from 'wouter'
 
 export default function EditProfile() {
   const { user } = useAuth()
@@ -59,7 +59,9 @@ export default function EditProfile() {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: isRTL ? 'الملف كبير جداً' : 'File too large',
-        description: isRTL ? 'يجب أن تكون صورة الملف الشخصي أقل من 5MB.' : 'Avatar must be less than 5MB.',
+        description: isRTL
+          ? 'يجب أن تكون صورة الملف الشخصي أقل من 5MB.'
+          : 'Avatar must be less than 5MB.',
         variant: 'destructive',
       })
       return
@@ -99,7 +101,10 @@ export default function EditProfile() {
   return (
     <div className="h-full overflow-hidden">
       <ScrollArea className="h-full">
-        <div className="w-full max-w-2xl mx-auto p-4 sm:p-6 pb-24 md:pb-8" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div
+          className="w-full max-w-2xl mx-auto p-4 sm:p-6 pb-24 md:pb-8"
+          dir={isRTL ? 'rtl' : 'ltr'}
+        >
           <h1 className="text-xl sm:text-2xl font-bold mb-6">
             {isRTL ? 'تعديل الملف الشخصي' : 'Edit Profile'}
           </h1>
@@ -128,15 +133,17 @@ export default function EditProfile() {
                 className="hidden"
               />
               <p className="text-sm text-muted-foreground text-center">
-                {isRTL ? 'انقر على أيقونة الكاميرا لتغيير صورتك الشخصية' : 'Click the camera icon to change your profile picture'}
+                {isRTL
+                  ? 'انقر على أيقونة الكاميرا لتغيير صورتك الشخصية'
+                  : 'Click the camera icon to change your profile picture'}
               </p>
             </div>
 
             <div className="space-y-2">
               <Label>{isRTL ? 'اسم المستخدم' : 'Username'}</Label>
-              <Input 
-                value={profile?.username} 
-                disabled 
+              <Input
+                value={profile?.username}
+                disabled
                 className="bg-muted/50 text-muted-foreground"
               />
               <p className="text-xs text-muted-foreground">
@@ -163,9 +170,7 @@ export default function EditProfile() {
                 className="min-h-[100px] bg-muted/30 border-border/50 focus:border-primary resize-none"
                 maxLength={150}
               />
-              <p className="text-xs text-muted-foreground text-right">
-                {formData.bio.length}/150
-              </p>
+              <p className="text-xs text-muted-foreground text-right">{formData.bio.length}/150</p>
             </div>
 
             <div className="space-y-2">
@@ -186,11 +191,17 @@ export default function EditProfile() {
                 className="flex-1 h-11 rounded-xl gradient-primary hover:opacity-90"
                 disabled={isUploading || updateProfileMutation.isPending}
               >
-                {isUploading 
-                  ? (isRTL ? 'جاري الرفع...' : 'Uploading...') 
-                  : updateProfileMutation.isPending 
-                    ? (isRTL ? 'جاري الحفظ...' : 'Saving...') 
-                    : (isRTL ? 'حفظ التغييرات' : 'Save Changes')}
+                {isUploading
+                  ? isRTL
+                    ? 'جاري الرفع...'
+                    : 'Uploading...'
+                  : updateProfileMutation.isPending
+                    ? isRTL
+                      ? 'جاري الحفظ...'
+                      : 'Saving...'
+                    : isRTL
+                      ? 'حفظ التغييرات'
+                      : 'Save Changes'}
               </Button>
               <Button
                 variant="outline"

@@ -1,5 +1,5 @@
-import React from 'react'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
+import type React from 'react'
 
 interface LoadingStateProps {
   isLoading?: boolean
@@ -7,7 +7,9 @@ interface LoadingStateProps {
   isEmpty?: boolean
   children?: React.ReactNode
   loadingComponent?: React.ReactNode
-  errorComponent?: React.ReactNode | ((error: Error | string, retry?: () => void) => React.ReactNode)
+  errorComponent?:
+    | React.ReactNode
+    | ((error: Error | string, retry?: () => void) => React.ReactNode)
   emptyComponent?: React.ReactNode
   onRetry?: () => void
 }
@@ -94,10 +96,7 @@ export function SkeletonLoader({ count = 3, height = 'h-12', className = '' }) {
   return (
     <div className={`space-y-3 ${className}`}>
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          className={`${height} bg-muted/40 rounded-lg animate-pulse`}
-        />
+        <div key={i} className={`${height} bg-muted/40 rounded-lg animate-pulse`} />
       ))}
     </div>
   )

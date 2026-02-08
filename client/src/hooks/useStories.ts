@@ -1,7 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 interface StoryProfile {
   username: string
@@ -24,7 +24,7 @@ export function useStories() {
     queryKey: ['stories'],
     queryFn: async () => {
       const now = new Date().toISOString()
-      
+
       const { data, error } = await supabase
         .from('stories')
         .select(`
@@ -57,15 +57,17 @@ export function useCreateStory() {
   return useMutation({
     mutationFn: async ({ file, mediaType }: { file: File; mediaType: 'image' | 'video' }) => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
-        
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
         if (!user) {
           throw new Error('You must be logged in to create a story')
         }
 
         const fileExt = file.name.split('.').pop()
         const fileName = `${user.id}/${Date.now()}.${fileExt}`
-        
+
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('stories')
           .upload(fileName, file, {
@@ -75,9 +77,9 @@ export function useCreateStory() {
 
         if (uploadError) throw new Error(`Failed to upload story media: ${uploadError.message}`)
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('stories')
-          .getPublicUrl(fileName)
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from('stories').getPublicUrl(fileName)
 
         // Add cache busting parameter to force fresh image load
         const urlWithCacheBust = `${publicUrl}?t=${Date.now()}`
@@ -100,12 +102,14 @@ export function useCreateStory() {
         return data
       } catch (error) {
         logger.error('Error in useCreateStory:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while creating the story')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while creating the story')
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stories'] })
-      
+
       toast({
         title: 'Story created!',
         description: 'Your story has been posted.',

@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react'
 import PusherClient from 'pusher-js'
+import { useEffect, useRef } from 'react'
 
 const pusherInstance = new PusherClient('b899008fb2257ea055b9', {
   cluster: 'eu',
@@ -26,9 +26,10 @@ export function usePusher(
       return
     }
 
-    const channelName = (options?.isConversation ?? true)
-      ? `conversation-${conversationIdOrChannelName}`
-      : (conversationIdOrChannelName as string)
+    const channelName =
+      (options?.isConversation ?? true)
+        ? `conversation-${conversationIdOrChannelName}`
+        : (conversationIdOrChannelName as string)
 
     const channel = pusherInstance.subscribe(channelName)
     channelRef.current = channel

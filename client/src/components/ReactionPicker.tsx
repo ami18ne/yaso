@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useState } from 'react'
 
 const REACTIONS = [
   { emoji: '❤️', name: 'love', color: 'text-red-500' },
@@ -11,14 +11,14 @@ const REACTIONS = [
   { emoji: '👍', name: 'like', color: 'text-primary' },
   { emoji: '🔥', name: 'fire', color: 'text-orange-400' },
   { emoji: '💯', name: 'hundred', color: 'text-red-400' },
-];
+]
 
 interface ReactionPickerProps {
-  isOpen: boolean;
-  onReaction: (reaction: string) => void;
-  onClose: () => void;
-  selectedReaction?: string;
-  className?: string;
+  isOpen: boolean
+  onReaction: (reaction: string) => void
+  onClose: () => void
+  selectedReaction?: string
+  className?: string
 }
 
 export default function ReactionPicker({
@@ -28,7 +28,7 @@ export default function ReactionPicker({
   selectedReaction,
   className,
 }: ReactionPickerProps) {
-  const [hoveredReaction, setHoveredReaction] = useState<string | null>(null);
+  const [hoveredReaction, setHoveredReaction] = useState<string | null>(null)
 
   return (
     <AnimatePresence>
@@ -60,12 +60,12 @@ export default function ReactionPicker({
                 onHoverStart={() => setHoveredReaction(reaction.name)}
                 onHoverEnd={() => setHoveredReaction(null)}
                 onClick={() => {
-                  onReaction(reaction.emoji);
-                  onClose();
+                  onReaction(reaction.emoji)
+                  onClose()
                 }}
               >
                 <span className="text-2xl">{reaction.emoji}</span>
-                
+
                 <AnimatePresence>
                   {hoveredReaction === reaction.name && (
                     <motion.div
@@ -86,5 +86,5 @@ export default function ReactionPicker({
         </motion.div>
       )}
     </AnimatePresence>
-  );
+  )
 }

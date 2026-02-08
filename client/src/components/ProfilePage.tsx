@@ -1,25 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Edit, MapPin, Calendar, Users, Video, MessageCircle } from "lucide-react";
-import { logger } from "@/lib/logger";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { logger } from '@/lib/logger'
+import { Calendar, Edit, MapPin, MessageCircle, Users, Video } from 'lucide-react'
 
 interface ProfilePageProps {
   user: {
-    name: string;
-    username: string;
-    avatar?: string;
-    bio: string;
-    location: string;
-    joinDate: string;
-    followersCount: number;
-    followingCount: number;
-    videosCount: number;
-    isOnline: boolean;
-  };
-  onEditProfile?: () => void;
+    name: string
+    username: string
+    avatar?: string
+    bio: string
+    location: string
+    joinDate: string
+    followersCount: number
+    followingCount: number
+    videosCount: number
+    isOnline: boolean
+  }
+  onEditProfile?: () => void
 }
 
 export default function ProfilePage({ user, onEditProfile }: ProfilePageProps) {
@@ -47,11 +47,13 @@ export default function ProfilePage({ user, onEditProfile }: ProfilePageProps) {
 
               <div className="flex-1 space-y-2">
                 <div>
-                  <h1 className="text-3xl font-bold" data-testid="text-profile-name">{user.name}</h1>
+                  <h1 className="text-3xl font-bold" data-testid="text-profile-name">
+                    {user.name}
+                  </h1>
                   <p className="text-muted-foreground">@{user.username}</p>
                 </div>
                 <p className="text-sm max-w-2xl">{user.bio}</p>
-                
+
                 <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1.5">
                     <MapPin className="h-4 w-4" strokeWidth={2} />
@@ -152,10 +154,10 @@ export default function ProfilePage({ user, onEditProfile }: ProfilePageProps) {
               <TabsContent value="connections" className="mt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
-                    { name: "Sarah Johnson", username: "sarahj", mutual: 12 },
-                    { name: "Mike Chen", username: "mikec", mutual: 8 },
-                    { name: "Alex Rivera", username: "alexr", mutual: 15 },
-                    { name: "Emma Davis", username: "emmad", mutual: 6 },
+                    { name: 'Sarah Johnson', username: 'sarahj', mutual: 12 },
+                    { name: 'Mike Chen', username: 'mikec', mutual: 8 },
+                    { name: 'Alex Rivera', username: 'alexr', mutual: 15 },
+                    { name: 'Emma Davis', username: 'emmad', mutual: 6 },
                   ].map((connection) => (
                     <Card key={connection.username} className="hover-elevate cursor-pointer">
                       <CardContent className="p-4">
@@ -170,7 +172,9 @@ export default function ProfilePage({ user, onEditProfile }: ProfilePageProps) {
                             <p className="text-sm text-muted-foreground">@{connection.username}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs text-muted-foreground">{connection.mutual} mutual</p>
+                            <p className="text-xs text-muted-foreground">
+                              {connection.mutual} mutual
+                            </p>
                             <Button size="sm" variant="outline" className="mt-1">
                               Message
                             </Button>
@@ -186,5 +190,5 @@ export default function ProfilePage({ user, onEditProfile }: ProfilePageProps) {
         </Card>
       </div>
     </div>
-  );
+  )
 }

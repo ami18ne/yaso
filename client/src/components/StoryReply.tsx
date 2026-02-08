@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { Send, Smile, Mic } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import VoiceRecorder from './VoiceRecorder';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { cn } from '@/lib/utils'
+import { Mic, Send, Smile } from 'lucide-react'
+import { useState } from 'react'
+import VoiceRecorder from './VoiceRecorder'
 
 interface StoryReplyProps {
-  storyId: string;
-  storyOwner: string;
-  onSendReply: (message: string, type: 'text' | 'voice', audioBlob?: Blob) => void;
-  className?: string;
+  storyId: string
+  storyOwner: string
+  onSendReply: (message: string, type: 'text' | 'voice', audioBlob?: Blob) => void
+  className?: string
 }
 
-const QUICK_REACTIONS = ['❤️', '🔥', '👏', '😂', '😮', '😢'];
+const QUICK_REACTIONS = ['❤️', '🔥', '👏', '😂', '😮', '😢']
 
 export default function StoryReply({
   storyId,
@@ -20,24 +20,24 @@ export default function StoryReply({
   onSendReply,
   className,
 }: StoryReplyProps) {
-  const [message, setMessage] = useState('');
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [message, setMessage] = useState('')
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false)
 
   const handleSendText = () => {
     if (message.trim()) {
-      onSendReply(message, 'text');
-      setMessage('');
+      onSendReply(message, 'text')
+      setMessage('')
     }
-  };
+  }
 
   const handleQuickReaction = (emoji: string) => {
-    onSendReply(emoji, 'text');
-  };
+    onSendReply(emoji, 'text')
+  }
 
   const handleVoiceRecording = (audioBlob: Blob, duration: number) => {
-    onSendReply(`Voice message (${Math.floor(duration)}s)`, 'voice', audioBlob);
-    setShowVoiceRecorder(false);
-  };
+    onSendReply(`Voice message (${Math.floor(duration)}s)`, 'voice', audioBlob)
+    setShowVoiceRecorder(false)
+  }
 
   return (
     <div className={cn('space-y-3', className)}>
@@ -69,8 +69,8 @@ export default function StoryReply({
               className="pr-20 bg-white/10 border-white/20 text-white placeholder:text-white/50 rounded-full"
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSendText();
+                  e.preventDefault()
+                  handleSendText()
                 }
               }}
             />
@@ -85,7 +85,7 @@ export default function StoryReply({
               </Button>
             </div>
           </div>
-          
+
           <Button
             size="icon"
             className="rounded-full bg-primary hover:bg-primary/90 neon-glow"
@@ -97,5 +97,5 @@ export default function StoryReply({
         </div>
       )}
     </div>
-  );
+  )
 }

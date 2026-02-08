@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -6,9 +6,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import { Link, Mail } from 'lucide-react'
+import { useState } from 'react'
 import { FaFacebook, FaTwitter, FaWhatsapp } from 'react-icons/fa'
 
 interface ShareDialogProps {

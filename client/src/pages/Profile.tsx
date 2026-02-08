@@ -1,78 +1,95 @@
-import { useState } from "react";
-import { useParams, useLocation } from "wouter";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link, Share2, Heart, MessageCircle, Settings, Play, Grid3X3, Bookmark, Video } from "lucide-react";
-import { useVideos } from "@/hooks/useVideos";
-import { useProfile, useProfileByUsername, useFollowUser, useIsFollowing } from "@/hooks/useProfiles";
-import { useAuth } from "@/contexts/AuthContext";
-import { usePosts, useSavedPosts } from "@/hooks/usePosts";
-import { useGetOrCreateConversation } from "@/hooks/useMessages";
-import { useToast } from "@/hooks/use-toast";
-import UserAvatar from "@/components/UserAvatar";
-import VerifiedBadge from "@/components/VerifiedBadge";
-import ImageLightbox from "@/components/ImageLightbox";
-import FollowersDialog from "@/components/FollowersDialog";
-import OptimizedImage from "@/components/OptimizedImage";
-import { isVerifiedUser } from "@/lib/verifiedUsers";
+import FollowersDialog from '@/components/FollowersDialog'
+import ImageLightbox from '@/components/ImageLightbox'
+import OptimizedImage from '@/components/OptimizedImage'
+import UserAvatar from '@/components/UserAvatar'
+import VerifiedBadge from '@/components/VerifiedBadge'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import { useGetOrCreateConversation } from '@/hooks/useMessages'
+import { usePosts, useSavedPosts } from '@/hooks/usePosts'
+import {
+  useFollowUser,
+  useIsFollowing,
+  useProfile,
+  useProfileByUsername,
+} from '@/hooks/useProfiles'
+import { useVideos } from '@/hooks/useVideos'
+import { isVerifiedUser } from '@/lib/verifiedUsers'
+import {
+  Bookmark,
+  Grid3X3,
+  Heart,
+  Link,
+  MessageCircle,
+  Play,
+  Settings,
+  Share2,
+  Video,
+} from 'lucide-react'
+import { useState } from 'react'
+import { useLocation, useParams } from 'wouter'
 
 export default function Profile() {
-  const params = useParams();
-  const username = params.username;
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const { toast } = useToast();
-  const getOrCreateConversationMutation = useGetOrCreateConversation();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [showFollowers, setShowFollowers] = useState(false);
-  const [showFollowing, setShowFollowing] = useState(false);
-  
-  const { data: profileByUsername, isLoading: loadingByUsername } = useProfileByUsername(username);
-  const { data: currentUserProfile, isLoading: loadingCurrentUser } = useProfile(!username ? user?.id : undefined);
-  
-  const profile = username ? profileByUsername : currentUserProfile;
-  const profileLoading = username ? loadingByUsername : loadingCurrentUser;
-  const { data: allPosts } = usePosts();
-  const { data: savedPosts = [] } = useSavedPosts();
-  const { data: isFollowing = false } = useIsFollowing(profile?.id || "");
-  const followMutation = useFollowUser();
+  const params = useParams()
+  const username = params.username
+  const { user } = useAuth()
+  const [, setLocation] = useLocation()
+  const { toast } = useToast()
+  const getOrCreateConversationMutation = useGetOrCreateConversation()
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [showFollowers, setShowFollowers] = useState(false)
+  const [showFollowing, setShowFollowing] = useState(false)
 
-  const isOwnProfile = !username || user?.id === profile?.id;
-  
-  const userPosts = allPosts?.filter(post => post.user_id === profile?.id) || [];
-  const { data: allVideos } = useVideos();
-  const userVideos = allVideos?.filter(video => video.user_id === profile?.id) || [];
+  const { data: profileByUsername, isLoading: loadingByUsername } = useProfileByUsername(username)
+  const { data: currentUserProfile, isLoading: loadingCurrentUser } = useProfile(
+    !username ? user?.id : undefined
+  )
+
+  const profile = username ? profileByUsername : currentUserProfile
+  const profileLoading = username ? loadingByUsername : loadingCurrentUser
+  const { data: allPosts } = usePosts()
+  const { data: savedPosts = [] } = useSavedPosts()
+  const { data: isFollowing = false } = useIsFollowing(profile?.id || '')
+  const followMutation = useFollowUser()
+
+  const isOwnProfile = !username || user?.id === profile?.id
+
+  const userPosts = allPosts?.filter((post) => post.user_id === profile?.id) || []
+  const { data: allVideos } = useVideos()
+  const userVideos = allVideos?.filter((video) => video.user_id === profile?.id) || []
 
   const handleFollowToggle = () => {
-    if (!profile) return;
-    followMutation.mutate({ userId: profile.id, isFollowing });
-  };
+    if (!profile) return
+    followMutation.mutate({ userId: profile.id, isFollowing })
+  }
 
   const handleStartChat = async () => {
-    if (!profile || !user) return;
-    
+    if (!profile || !user) return
+
     try {
-      const { conversationId } = await getOrCreateConversationMutation.mutateAsync(profile.id);
-      setLocation('/messages');
+      const { conversationId } = await getOrCreateConversationMutation.mutateAsync(profile.id)
+      setLocation('/messages')
       toast({
-        title: "Conversation started!",
-        description: "You can now chat with this user.",
-      });
+        title: 'Conversation started!',
+        description: 'You can now chat with this user.',
+      })
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to start conversation",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to start conversation',
+        variant: 'destructive',
+      })
     }
-  };
+  }
 
   const handleShareProfile = () => {
-    const url = `${window.location.origin}/profile/${profile?.username}`;
-    navigator.clipboard.writeText(url);
-    toast({ title: "Link copied!" });
-  };
+    const url = `${window.location.origin}/profile/${profile?.username}`
+    navigator.clipboard.writeText(url)
+    toast({ title: 'Link copied!' })
+  }
 
   if (profileLoading) {
     return (
@@ -80,7 +97,7 @@ export default function Profile() {
         <div className="w-12 h-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
         <p className="text-muted-foreground animate-pulse">Loading profile...</p>
       </div>
-    );
+    )
   }
 
   if (!profile) {
@@ -91,19 +108,17 @@ export default function Profile() {
             <span className="text-4xl">👤</span>
           </div>
           <h3 className="text-xl font-semibold">User not found</h3>
-          <p className="text-muted-foreground">
-            This profile doesn't exist or has been deleted.
-          </p>
+          <p className="text-muted-foreground">This profile doesn't exist or has been deleted.</p>
         </div>
       </div>
-    );
+    )
   }
 
   const formatCount = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
-    return count.toString();
-  };
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`
+    return count.toString()
+  }
 
   return (
     <div className="h-full overflow-hidden">
@@ -131,7 +146,9 @@ export default function Profile() {
               </div>
 
               {profile.bio && (
-                <p className="text-sm text-muted-foreground max-w-md leading-relaxed px-4">{profile.bio}</p>
+                <p className="text-sm text-muted-foreground max-w-md leading-relaxed px-4">
+                  {profile.bio}
+                </p>
               )}
 
               {profile.website && (
@@ -142,29 +159,35 @@ export default function Profile() {
                   className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline underline-offset-4"
                 >
                   <Link className="h-3.5 w-3.5" />
-                  {profile.website.replace(/^https?:\/\//, "")}
+                  {profile.website.replace(/^https?:\/\//, '')}
                 </a>
               )}
 
               <div className="flex items-center justify-center gap-6 sm:gap-8 py-4">
                 <button className="text-center hover:opacity-80 transition-opacity">
-                  <div className="text-lg sm:text-xl font-bold">{formatCount(profile.posts_count)}</div>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {formatCount(profile.posts_count)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Posts</div>
                 </button>
                 <div className="h-8 w-px bg-border" />
-                <button 
+                <button
                   className="text-center hover:opacity-80 transition-opacity"
                   onClick={() => setShowFollowers(true)}
                 >
-                  <div className="text-lg sm:text-xl font-bold">{formatCount(profile.followers_count)}</div>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {formatCount(profile.followers_count)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Followers</div>
                 </button>
                 <div className="h-8 w-px bg-border" />
-                <button 
+                <button
                   className="text-center hover:opacity-80 transition-opacity"
                   onClick={() => setShowFollowing(true)}
                 >
-                  <div className="text-lg sm:text-xl font-bold">{formatCount(profile.following_count)}</div>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {formatCount(profile.following_count)}
+                  </div>
                   <div className="text-xs text-muted-foreground">Following</div>
                 </button>
               </div>
@@ -200,14 +223,14 @@ export default function Profile() {
                   <>
                     <Button
                       className={`flex-1 h-10 rounded-xl text-sm ${
-                        isFollowing 
-                          ? "bg-muted text-foreground hover:bg-muted/80" 
-                          : "gradient-primary hover:opacity-90"
+                        isFollowing
+                          ? 'bg-muted text-foreground hover:bg-muted/80'
+                          : 'gradient-primary hover:opacity-90'
                       }`}
                       onClick={handleFollowToggle}
                       disabled={followMutation.isPending}
                     >
-                      {isFollowing ? "Following" : "Follow"}
+                      {isFollowing ? 'Following' : 'Follow'}
                     </Button>
                     <Button
                       variant="outline"
@@ -271,7 +294,7 @@ export default function Profile() {
                           <p className="text-xs text-center line-clamp-3">{post.content}</p>
                         </div>
                       )}
-                      
+
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                         <div className="flex items-center gap-1.5 text-white text-sm font-medium">
                           <Heart className="h-4 w-4" fill="white" />
@@ -289,7 +312,11 @@ export default function Profile() {
                 <EmptyState
                   icon="📷"
                   title="No posts yet"
-                  description={isOwnProfile ? "Share your first post to get started!" : "This user hasn't posted anything yet."}
+                  description={
+                    isOwnProfile
+                      ? 'Share your first post to get started!'
+                      : "This user hasn't posted anything yet."
+                  }
                 />
               )}
             </TabsContent>
@@ -328,7 +355,11 @@ export default function Profile() {
                 <EmptyState
                   icon="🎬"
                   title="No videos yet"
-                  description={isOwnProfile ? "Upload your first video!" : "This user hasn't uploaded any videos yet."}
+                  description={
+                    isOwnProfile
+                      ? 'Upload your first video!'
+                      : "This user hasn't uploaded any videos yet."
+                  }
                 />
               )}
             </TabsContent>
@@ -353,7 +384,7 @@ export default function Profile() {
                           <p className="text-xs text-center line-clamp-3">{post.content}</p>
                         </div>
                       )}
-                      
+
                       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
                         <div className="flex items-center gap-1.5 text-white text-sm font-medium">
                           <Heart className="h-4 w-4" fill="white" />
@@ -387,7 +418,7 @@ export default function Profile() {
       <FollowersDialog
         open={showFollowers}
         onOpenChange={setShowFollowers}
-        userId={profile?.id || ""}
+        userId={profile?.id || ''}
         type="followers"
         title="Followers"
       />
@@ -395,15 +426,19 @@ export default function Profile() {
       <FollowersDialog
         open={showFollowing}
         onOpenChange={setShowFollowing}
-        userId={profile?.id || ""}
+        userId={profile?.id || ''}
         type="following"
         title="Following"
       />
     </div>
-  );
+  )
 }
 
-function EmptyState({ icon, title, description }: { icon: string; title: string; description: string }) {
+function EmptyState({
+  icon,
+  title,
+  description,
+}: { icon: string; title: string; description: string }) {
   return (
     <div className="flex items-center justify-center py-20 px-4">
       <div className="text-center space-y-3 max-w-xs animate-fade-in">
@@ -414,5 +449,5 @@ function EmptyState({ icon, title, description }: { icon: string; title: string;
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
     </div>
-  );
+  )
 }

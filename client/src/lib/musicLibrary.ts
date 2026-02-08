@@ -17,8 +17,25 @@ export interface MusicTrack {
 }
 
 export type MusicCategory = 'trending' | 'newReleases' | 'forYou' | 'saved'
-export type MusicMood = 'happy' | 'sad' | 'energetic' | 'calm' | 'romantic' | 'dramatic' | 'funny' | 'inspirational'
-export type MusicGenre = 'pop' | 'hiphop' | 'electronic' | 'rock' | 'rnb' | 'arabic' | 'classical' | 'jazz' | 'ambient'
+export type MusicMood =
+  | 'happy'
+  | 'sad'
+  | 'energetic'
+  | 'calm'
+  | 'romantic'
+  | 'dramatic'
+  | 'funny'
+  | 'inspirational'
+export type MusicGenre =
+  | 'pop'
+  | 'hiphop'
+  | 'electronic'
+  | 'rock'
+  | 'rnb'
+  | 'arabic'
+  | 'classical'
+  | 'jazz'
+  | 'ambient'
 
 export const moodLabels: Record<MusicMood, { en: string; ar: string }> = {
   happy: { en: 'Happy', ar: 'سعيد' },
@@ -28,7 +45,7 @@ export const moodLabels: Record<MusicMood, { en: string; ar: string }> = {
   romantic: { en: 'Romantic', ar: 'رومانسي' },
   dramatic: { en: 'Dramatic', ar: 'درامي' },
   funny: { en: 'Funny', ar: 'مضحك' },
-  inspirational: { en: 'Inspirational', ar: 'ملهم' }
+  inspirational: { en: 'Inspirational', ar: 'ملهم' },
 }
 
 export const genreLabels: Record<MusicGenre, { en: string; ar: string }> = {
@@ -40,14 +57,14 @@ export const genreLabels: Record<MusicGenre, { en: string; ar: string }> = {
   arabic: { en: 'Arabic', ar: 'عربي' },
   classical: { en: 'Classical', ar: 'كلاسيكي' },
   jazz: { en: 'Jazz', ar: 'جاز' },
-  ambient: { en: 'Ambient', ar: 'محيط' }
+  ambient: { en: 'Ambient', ar: 'محيط' },
 }
 
 export const categoryLabels: Record<MusicCategory, { en: string; ar: string; icon: string }> = {
   trending: { en: 'Trending', ar: 'رائج', icon: '🔥' },
   newReleases: { en: 'New Releases', ar: 'جديد', icon: '✨' },
   forYou: { en: 'For You', ar: 'لك', icon: '💫' },
-  saved: { en: 'Saved', ar: 'المحفوظة', icon: '❤️' }
+  saved: { en: 'Saved', ar: 'المحفوظة', icon: '❤️' },
 }
 
 // Generate gradient covers for each track - reliable and works everywhere
@@ -64,16 +81,39 @@ const generateGradientCover = (trackId: string): string => {
     'linear-gradient(135deg, #2e2e78 0%, #662d91 100%)', // Dark Purple
     'linear-gradient(135deg, #ffa751 0%, #ffe259 100%)', // Orange Yellow
     'linear-gradient(135deg, #ff6e7f 0%, #bfe9ff 100%)', // Red Blue
-    'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)'  // Purple Blue
+    'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)', // Purple Blue
   ]
-  
-  const colors_hex = colors.map(c => `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><style>${c.replace(/linear-gradient\(135deg, /, '').replace(/ \d+%/g, '').split(',').map((c, i) => `stop${i}{stop-color:${c}}`).join(';')}</style></defs><rect width="200" height="200" style="background:${c}"/></svg>`)}`)
-  
+
+  const colors_hex = colors.map(
+    (c) =>
+      `data:image/svg+xml,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><style>${c
+          .replace(/linear-gradient\(135deg, /, '')
+          .replace(/ \d+%/g, '')
+          .split(',')
+          .map((c, i) => `stop${i}{stop-color:${c}}`)
+          .join(';')}</style></defs><rect width="200" height="200" style="background:${c}"/></svg>`
+      )}`
+  )
+
   // Use a simple solid color SVG instead
-  const solidColors = ['#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a', '#30cfd0', '#a8edea', '#ff9a56', '#2e2e78', '#ffa751', '#ff6e7f', '#e0c3fc']
+  const solidColors = [
+    '#667eea',
+    '#f093fb',
+    '#4facfe',
+    '#43e97b',
+    '#fa709a',
+    '#30cfd0',
+    '#a8edea',
+    '#ff9a56',
+    '#2e2e78',
+    '#ffa751',
+    '#ff6e7f',
+    '#e0c3fc',
+  ]
   const hashCode = trackId.split('').reduce((hash, char) => hash + char.charCodeAt(0), 0)
   const color = solidColors[hashCode % solidColors.length]
-  
+
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='${color.replace('#', '%23')}'/%3E%3Ctext x='100' y='100' font-size='60' fill='white' text-anchor='middle' dominant-baseline='middle' font-weight='bold'%3E♪%3C/text%3E%3C/svg%3E`
 }
 
@@ -91,7 +131,7 @@ export const musicLibrary: MusicTrack[] = [
     mood: ['happy', 'energetic'],
     genre: 'pop',
     isPopular: true,
-    usageCount: 1250000
+    usageCount: 1250000,
   },
   {
     id: 'beat-drop-2',
@@ -106,7 +146,7 @@ export const musicLibrary: MusicTrack[] = [
     mood: ['calm', 'dramatic'],
     genre: 'electronic',
     isPopular: true,
-    usageCount: 980000
+    usageCount: 980000,
   },
   {
     id: 'beat-drop-3',
@@ -121,7 +161,7 @@ export const musicLibrary: MusicTrack[] = [
     mood: ['energetic'],
     genre: 'hiphop',
     isPopular: true,
-    usageCount: 750000
+    usageCount: 750000,
   },
   {
     id: 'chill-1',
@@ -135,7 +175,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'forYou',
     mood: ['calm', 'inspirational'],
     genre: 'ambient',
-    usageCount: 450000
+    usageCount: 450000,
   },
   {
     id: 'arabic-1',
@@ -150,7 +190,7 @@ export const musicLibrary: MusicTrack[] = [
     mood: ['romantic', 'dramatic'],
     genre: 'arabic',
     isPopular: true,
-    usageCount: 620000
+    usageCount: 620000,
   },
   {
     id: 'pop-1',
@@ -164,7 +204,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'newReleases',
     mood: ['happy', 'energetic'],
     genre: 'pop',
-    usageCount: 380000
+    usageCount: 380000,
   },
   {
     id: 'rock-1',
@@ -178,7 +218,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'forYou',
     mood: ['energetic', 'dramatic'],
     genre: 'rock',
-    usageCount: 290000
+    usageCount: 290000,
   },
   {
     id: 'jazz-1',
@@ -192,7 +232,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'forYou',
     mood: ['calm', 'romantic'],
     genre: 'jazz',
-    usageCount: 210000
+    usageCount: 210000,
   },
   {
     id: 'rnb-1',
@@ -206,7 +246,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'newReleases',
     mood: ['romantic', 'calm'],
     genre: 'rnb',
-    usageCount: 340000
+    usageCount: 340000,
   },
   {
     id: 'electronic-1',
@@ -221,7 +261,7 @@ export const musicLibrary: MusicTrack[] = [
     mood: ['energetic', 'happy'],
     genre: 'electronic',
     isPopular: true,
-    usageCount: 890000
+    usageCount: 890000,
   },
   {
     id: 'classical-1',
@@ -235,7 +275,7 @@ export const musicLibrary: MusicTrack[] = [
     category: 'forYou',
     mood: ['calm', 'sad', 'inspirational'],
     genre: 'classical',
-    usageCount: 180000
+    usageCount: 180000,
   },
   {
     id: 'funny-1',
@@ -249,15 +289,15 @@ export const musicLibrary: MusicTrack[] = [
     category: 'newReleases',
     mood: ['funny', 'happy'],
     genre: 'pop',
-    usageCount: 520000
-  }
+    usageCount: 520000,
+  },
 ]
 
 class MusicLibraryManager {
   private currentSound: Howl | null = null
   private currentTrackId: string | null = null
   private savedTracks: Set<string> = new Set()
-  private volume: number = 0.7
+  private volume = 0.7
 
   constructor() {
     const saved = localStorage.getItem('buzly_saved_tracks')
@@ -268,37 +308,38 @@ class MusicLibraryManager {
 
   getTrendingTracks(): MusicTrack[] {
     return musicLibrary
-      .filter(track => track.category === 'trending' || track.isPopular)
+      .filter((track) => track.category === 'trending' || track.isPopular)
       .sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0))
   }
 
   getNewReleases(): MusicTrack[] {
-    return musicLibrary.filter(track => track.category === 'newReleases')
+    return musicLibrary.filter((track) => track.category === 'newReleases')
   }
 
   getForYouTracks(): MusicTrack[] {
-    return musicLibrary.filter(track => track.category === 'forYou')
+    return musicLibrary.filter((track) => track.category === 'forYou')
   }
 
   getSavedTracks(): MusicTrack[] {
-    return musicLibrary.filter(track => this.savedTracks.has(track.id))
+    return musicLibrary.filter((track) => this.savedTracks.has(track.id))
   }
 
   getTracksByGenre(genre: MusicGenre): MusicTrack[] {
-    return musicLibrary.filter(track => track.genre === genre)
+    return musicLibrary.filter((track) => track.genre === genre)
   }
 
   getTracksByMood(mood: MusicMood): MusicTrack[] {
-    return musicLibrary.filter(track => track.mood.includes(mood))
+    return musicLibrary.filter((track) => track.mood.includes(mood))
   }
 
   searchTracks(query: string): MusicTrack[] {
     const lowerQuery = query.toLowerCase()
-    return musicLibrary.filter(track => 
-      track.title.toLowerCase().includes(lowerQuery) ||
-      track.titleAr.includes(query) ||
-      track.artist.toLowerCase().includes(lowerQuery) ||
-      track.artistAr.includes(query)
+    return musicLibrary.filter(
+      (track) =>
+        track.title.toLowerCase().includes(lowerQuery) ||
+        track.titleAr.includes(query) ||
+        track.artist.toLowerCase().includes(lowerQuery) ||
+        track.artistAr.includes(query)
     )
   }
 
@@ -334,7 +375,7 @@ class MusicLibraryManager {
       volume: this.volume,
       onend: () => {
         this.currentTrackId = null
-      }
+      },
     })
 
     this.currentTrackId = track.id

@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
 
 export interface Profile {
   id: string
@@ -42,7 +42,7 @@ export function useProfile(userId?: string) {
 
 export function useProfileByUsername(username?: string) {
   const { user } = useAuth()
-  
+
   return useQuery({
     queryKey: ['profile', 'username', username],
     queryFn: async () => {
@@ -58,12 +58,12 @@ export function useProfileByUsername(username?: string) {
       if (error && error.code === 'PGRST116') {
         return null
       }
-      
+
       if (error) {
         logger.error('Error fetching profile by username:', error)
         throw error
       }
-      
+
       return data
     },
     enabled: !!username,
@@ -132,7 +132,9 @@ export function useUpdateProfile() {
         return data
       } catch (error) {
         logger.error('Error in useUpdateProfile:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating your profile')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while updating your profile')
       }
     },
     onSuccess: (data) => {
@@ -140,12 +142,12 @@ export function useUpdateProfile() {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] })
       queryClient.invalidateQueries({ queryKey: ['profile', 'username'] })
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
-      
+
       // Optionally set data directly for immediate UI update
       if (user?.id) {
         queryClient.setQueryData(['profile', user.id], data)
       }
-      
+
       toast({
         title: 'Profile updated',
         description: 'Your profile has been updated successfully.',
@@ -180,28 +182,32 @@ export function useFollowUser() {
 
           if (error) throw new Error(`Failed to unfollow user: ${error.message}`)
         } else {
-          const { error } = await supabase
-            .from('follows')
-            .insert([{
+          const { error } = await supabase.from('follows').insert([
+            {
               follower_id: user.id,
               following_id: userId,
-            }])
+            },
+          ])
 
           if (error) throw new Error(`Failed to follow user: ${error.message}`)
         }
       } catch (error) {
         logger.error('Error in useFollowUser:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating follow status')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while updating follow status')
       }
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['profiles'] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       queryClient.invalidateQueries({ queryKey: ['following'] })
-      
+
       toast({
         title: variables.isFollowing ? 'Unfollowed' : 'Following',
-        description: variables.isFollowing ? 'You unfollowed this user' : 'You are now following this user',
+        description: variables.isFollowing
+          ? 'You unfollowed this user'
+          : 'You are now following this user',
       })
     },
     onError: (error: Error) => {
@@ -259,8 +265,8 @@ export function useFollowers(userId?: string) {
         logger.error('Error fetching followers:', error)
         throw error
       }
-      
-      return data?.map(item => item.profiles).filter(Boolean) || []
+
+      return data?.map((item) => item.profiles).filter(Boolean) || []
     },
     enabled: !!userId,
   })
@@ -289,8 +295,8 @@ export function useFollowing(userId?: string) {
         logger.error('Error fetching following:', error)
         throw error
       }
-      
-      return data?.map(item => item.profiles).filter(Boolean) || []
+
+      return data?.map((item) => item.profiles).filter(Boolean) || []
     },
     enabled: !!userId,
   })

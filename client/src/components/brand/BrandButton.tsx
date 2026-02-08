@@ -1,6 +1,6 @@
-import { forwardRef } from 'react'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
+import { forwardRef } from 'react'
 
 interface BrandButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'glow'
@@ -11,9 +11,12 @@ interface BrandButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
 }
 
 const variants = {
-  primary: 'bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500 text-white hover:opacity-90 shadow-lg shadow-purple-500/25',
-  secondary: 'bg-gradient-to-r from-pink-500 to-violet-500 text-white hover:opacity-90 shadow-lg shadow-pink-500/25',
-  outline: 'border-2 border-purple-500 text-purple-500 hover:bg-purple-500/10 dark:border-purple-400 dark:text-purple-400',
+  primary:
+    'bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500 text-white hover:opacity-90 shadow-lg shadow-purple-500/25',
+  secondary:
+    'bg-gradient-to-r from-pink-500 to-violet-500 text-white hover:opacity-90 shadow-lg shadow-pink-500/25',
+  outline:
+    'border-2 border-purple-500 text-purple-500 hover:bg-purple-500/10 dark:border-purple-400 dark:text-purple-400',
   ghost: 'text-purple-500 hover:bg-purple-500/10 dark:text-purple-400',
   glow: 'bg-gradient-to-r from-purple-500 via-violet-500 to-fuchsia-500 text-white hover:opacity-90 shadow-[0_0_20px_rgba(168,85,247,0.5)] hover:shadow-[0_0_30px_rgba(168,85,247,0.7)]',
 }
@@ -26,17 +29,20 @@ const sizes = {
 }
 
 const BrandButton = forwardRef<HTMLButtonElement, BrandButtonProps>(
-  ({ 
-    className, 
-    variant = 'primary', 
-    size = 'md',
-    loading = false,
-    icon,
-    iconPosition = 'left',
-    disabled,
-    children,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      variant = 'primary',
+      size = 'md',
+      loading = false,
+      icon,
+      iconPosition = 'left',
+      disabled,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     return (
       <button
         ref={ref}

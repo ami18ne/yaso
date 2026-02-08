@@ -14,7 +14,7 @@ export class AppError extends Error {
   constructor(
     public code: string,
     message: string,
-    public statusCode: number = 500,
+    public statusCode = 500,
     public metadata: ErrorMetadata = {}
   ) {
     super(message)
@@ -114,7 +114,9 @@ export class ErrorLogger {
         body: JSON.stringify({
           ...error.toJSON(),
           context,
-          userAgent: navigator.userAgent,
+          userAgent: (navigator as any).userAgentData
+            ? JSON.stringify((navigator as any).userAgentData.toJSON())
+            : navigator.userAgent,
           url: window.location.href,
         }),
       }).catch(() => {

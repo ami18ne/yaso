@@ -1,55 +1,82 @@
-import { type User, type InsertUser, type Message, type Community, type CommunityMember, type Channel, type ChannelMessage, type MessageReaction, type LiveSession, type Post, type PostReaction } from "@shared/schema";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { encrypt, decrypt, isEncrypted } from "./lib/encryption";
-import { v2 as cloudinary } from 'cloudinary';
+import type {
+  Channel,
+  ChannelMessage,
+  Community,
+  CommunityMember,
+  InsertUser,
+  LiveSession,
+  Message,
+  MessageReaction,
+  Post,
+  PostReaction,
+  User,
+} from '@shared/schema'
+import { type SupabaseClient, createClient } from '@supabase/supabase-js'
+import { v2 as cloudinary } from 'cloudinary'
+import { decrypt, encrypt, isEncrypted } from './lib/encryption'
 
 // Cloudinary configuration (replace with your credentials)
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET 
-});
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+})
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  getMessages(conversationId: string): Promise<Message[]>;
-  sendMessage(conversationId: string, senderId: string, content: string): Promise<Message>;
-  getOrCreateConversation(userId1: string, userId2: string): Promise<string>;
+  getUser(id: string): Promise<User | undefined>
+  getUserByUsername(username: string): Promise<User | undefined>
+  createUser(user: InsertUser): Promise<User>
+  getMessages(conversationId: string): Promise<Message[]>
+  sendMessage(conversationId: string, senderId: string, content: string): Promise<Message>
+  getOrCreateConversation(userId1: string, userId2: string): Promise<string>
   // Communities and channels
-  createCommunity(ownerId: string, name: string, description?: string, visibility?: string): Promise<Community>;
-  getCommunity(id: string): Promise<Community | undefined>;
-  listCommunitiesForUser(userId: string): Promise<Community[]>;
-  joinCommunity(communityId: string, userId: string, role?: string): Promise<CommunityMember>;
-  leaveCommunity(communityId: string, userId: string): Promise<void>;
-  createChannel(communityId: string, name: string, type?: string, isPrivate?: boolean): Promise<Channel>;
-  getChannelsForCommunity(communityId: string): Promise<Channel[]>;
-  sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage>;
-  getChannelMessages(channelId: string): Promise<ChannelMessage[]>;
-  getCommunityMembers(communityId: string): Promise<any[]>;
-  getUserRoleInCommunity(communityId: string, userId: string): Promise<string | null>;
+  createCommunity(
+    ownerId: string,
+    name: string,
+    description?: string,
+    visibility?: string
+  ): Promise<Community>
+  getCommunity(id: string): Promise<Community | undefined>
+  listCommunitiesForUser(userId: string): Promise<Community[]>
+  joinCommunity(communityId: string, userId: string, role?: string): Promise<CommunityMember>
+  leaveCommunity(communityId: string, userId: string): Promise<void>
+  createChannel(
+    communityId: string,
+    name: string,
+    type?: string,
+    isPrivate?: boolean
+  ): Promise<Channel>
+  getChannelsForCommunity(communityId: string): Promise<Channel[]>
+  sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage>
+  getChannelMessages(channelId: string): Promise<ChannelMessage[]>
+  getCommunityMembers(communityId: string): Promise<any[]>
+  getUserRoleInCommunity(communityId: string, userId: string): Promise<string | null>
   // Message reactions and status
-  setMessageRead(messageId: string): Promise<void>;
-  toggleMessageReaction(messageId: string, userId: string, reaction: string, isChannelMessage?: boolean): Promise<MessageReaction | null>;
-  createLiveSession(channelId: string, hostId: string, title?: string): Promise<LiveSession>;
-  endLiveSession(sessionId: string): Promise<void>;
+  setMessageRead(messageId: string): Promise<void>
+  toggleMessageReaction(
+    messageId: string,
+    userId: string,
+    reaction: string,
+    isChannelMessage?: boolean
+  ): Promise<MessageReaction | null>
+  createLiveSession(channelId: string, hostId: string, title?: string): Promise<LiveSession>
+  endLiveSession(sessionId: string): Promise<void>
   // Search
-  searchPublicCommunities(q?: string, page?: number, pageSize?: number): Promise<Community[]>;
+  searchPublicCommunities(q?: string, page?: number, pageSize?: number): Promise<Community[]>
   // Posts
-  getPosts(userId?: string, limit?: number): Promise<Post[]>;
-  createPost(userId: string, content: string, imageUrl?: string): Promise<Post>;
-  togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null>;
-  getPostReactions(postId: string): Promise<PostReaction[]>;
+  getPosts(userId?: string, limit?: number): Promise<Post[]>
+  createPost(userId: string, content: string, imageUrl?: string): Promise<Post>
+  togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null>
+  getPostReactions(postId: string): Promise<PostReaction[]>
   // Image transformations
-  applyCloudinaryTransformation(publicId: string, transformation: any): Promise<string>;
+  applyCloudinaryTransformation(publicId: string, transformation: any): Promise<string>
 }
 
 // Initialize Supabase client with service role key
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY;
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY
 
-let supabase: SupabaseClient | null = null;
+let supabase: SupabaseClient | null = null
 
 if (supabaseUrl && supabaseServiceKey) {
   supabase = createClient(supabaseUrl, supabaseServiceKey, {
@@ -57,148 +84,144 @@ if (supabaseUrl && supabaseServiceKey) {
       autoRefreshToken: false,
       persistSession: false,
     },
-  });
-  console.log('Supabase client initialized successfully');
+  })
+  console.log('Supabase client initialized successfully')
 } else {
-  console.warn('Supabase environment variables not configured. Some features may be limited.');
+  console.warn('Supabase environment variables not configured. Some features may be limited.')
 }
 
 export class SupabaseStorage implements IStorage {
   private checkSupabase(): SupabaseClient {
     if (!supabase) {
-      throw new Error('Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.');
+      throw new Error(
+        'Supabase is not configured. Please set SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables.'
+      )
     }
-    return supabase;
+    return supabase
   }
 
   async getUser(id: string): Promise<User | undefined> {
     try {
-      const client = this.checkSupabase();
-      const { data, error } = await client
-        .from('users')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const client = this.checkSupabase()
+      const { data, error } = await client.from('users').select('*').eq('id', id).single()
 
       if (error) {
-        console.error('Error fetching user:', error);
-        return undefined;
+        console.error('Error fetching user:', error)
+        return undefined
       }
 
-      return data as User;
+      return data as User
     } catch (error) {
-      console.error('Error in getUser:', error);
-      return undefined;
+      console.error('Error in getUser:', error)
+      return undefined
     }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('users')
         .select('*')
         .eq('username', username)
-        .single();
+        .single()
 
       if (error) {
-        console.error('Error fetching user by username:', error);
-        return undefined;
+        console.error('Error fetching user by username:', error)
+        return undefined
       }
 
-      return data as User;
+      return data as User
     } catch (error) {
-      console.error('Error in getUserByUsername:', error);
-      return undefined;
+      console.error('Error in getUserByUsername:', error)
+      return undefined
     }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
-      const client = this.checkSupabase();
-      const { data, error } = await client
-        .from('users')
-        .insert([insertUser])
-        .select()
-        .single();
+      const client = this.checkSupabase()
+      const { data, error } = await client.from('users').insert([insertUser]).select().single()
 
       if (error) {
-        throw new Error(`Failed to create user: ${error.message}`);
+        throw new Error(`Failed to create user: ${error.message}`)
       }
 
-      return data as User;
+      return data as User
     } catch (error) {
-      console.error('Error in createUser:', error);
-      throw error;
+      console.error('Error in createUser:', error)
+      throw error
     }
   }
 
   async getMessages(conversationId: string): Promise<Message[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('messages')
         .select('*')
         .eq('conversation_id', conversationId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
 
       if (error) {
-        console.error('Error fetching messages:', error);
-        return [];
+        console.error('Error fetching messages:', error)
+        return []
       }
 
-      const messages = (data as Message[]).map(msg => ({
+      const messages = (data as Message[]).map((msg) => ({
         ...msg,
-        content: isEncrypted(msg.content) ? decrypt(msg.content) : msg.content
-      }));
+        content: isEncrypted(msg.content) ? decrypt(msg.content) : msg.content,
+      }))
 
-      return messages;
+      return messages
     } catch (error) {
-      console.error('Error in getMessages:', error);
-      return [];
+      console.error('Error in getMessages:', error)
+      return []
     }
   }
 
   async sendMessage(conversationId: string, senderId: string, content: string): Promise<Message> {
     try {
-      const client = this.checkSupabase();
-      const encryptedContent = encrypt(content);
-      
+      const client = this.checkSupabase()
+      const encryptedContent = encrypt(content)
+
       const { data, error } = await client
         .from('messages')
-        .insert([{
-          conversation_id: conversationId,
-          sender_id: senderId,
-          content: encryptedContent,
-        }])
+        .insert([
+          {
+            conversation_id: conversationId,
+            sender_id: senderId,
+            content: encryptedContent,
+          },
+        ])
         .select()
-        .single();
+        .single()
 
       if (error) {
-        throw new Error(`Failed to send message: ${error.message}`);
+        throw new Error(`Failed to send message: ${error.message}`)
       }
 
       return {
         ...data,
-        content: content
-      } as Message;
+        content: content,
+      } as Message
     } catch (error) {
-      console.error('Error in sendMessage:', error);
-      throw error;
+      console.error('Error in sendMessage:', error)
+      throw error
     }
   }
 
   async getOrCreateConversation(userId1: string, userId2: string): Promise<string> {
     try {
-      const client = this.checkSupabase();
-      
+      const client = this.checkSupabase()
+
       // Check if conversation already exists
       const { data: existingConversation, error: checkError } = await client
         .from('conversation_participants')
         .select('conversation_id')
-        .eq('user_id', userId1);
+        .eq('user_id', userId1)
 
-      if (checkError) throw checkError;
+      if (checkError) throw checkError
 
       // Check if any of these conversations include userId2
       for (const { conversation_id } of existingConversation || []) {
@@ -206,10 +229,10 @@ export class SupabaseStorage implements IStorage {
           .from('conversation_participants')
           .select('*')
           .eq('conversation_id', conversation_id)
-          .eq('user_id', userId2);
+          .eq('user_id', userId2)
 
         if (otherParticipant && otherParticipant.length > 0) {
-          return conversation_id;
+          return conversation_id
         }
       }
 
@@ -218,35 +241,38 @@ export class SupabaseStorage implements IStorage {
         .from('conversations')
         .insert([{}])
         .select()
-        .single();
+        .single()
 
-      if (createError) throw createError;
+      if (createError) throw createError
 
       // Add participants
-      await client
-        .from('conversation_participants')
-        .insert([
-          { conversation_id: newConversation.id, user_id: userId1 },
-          { conversation_id: newConversation.id, user_id: userId2 },
-        ]);
+      await client.from('conversation_participants').insert([
+        { conversation_id: newConversation.id, user_id: userId1 },
+        { conversation_id: newConversation.id, user_id: userId2 },
+      ])
 
-      return newConversation.id;
+      return newConversation.id
     } catch (error) {
-      console.error('Error in getOrCreateConversation:', error);
-      throw error;
+      console.error('Error in getOrCreateConversation:', error)
+      throw error
     }
   }
 
   // Communities and channels
-  async createCommunity(ownerId: string, name: string, description = '', visibility = 'public'): Promise<Community> {
+  async createCommunity(
+    ownerId: string,
+    name: string,
+    description = '',
+    visibility = 'public'
+  ): Promise<Community> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       // Ensure unique community name (case-insensitive)
       const { data: existing } = await client
         .from('communities')
         .select('*')
         .ilike('name', name)
-        .limit(1);
+        .limit(1)
 
       if (existing && existing.length > 0) {
         throw new Error('Community name already exists')
@@ -256,104 +282,106 @@ export class SupabaseStorage implements IStorage {
         .from('communities')
         .insert([{ owner_id: ownerId, name, description, visibility }])
         .select()
-        .single();
+        .single()
 
-      if (error) throw error;
+      if (error) throw error
       // Add owner as first member with role 'owner'
       try {
-        await client.from('community_members').insert([{ community_id: data.id, user_id: ownerId, role: 'owner' }])
+        await client
+          .from('community_members')
+          .insert([{ community_id: data.id, user_id: ownerId, role: 'owner' }])
       } catch (e) {
         console.warn('Failed to insert owner as community member:', e)
       }
 
-      return data as Community;
+      return data as Community
     } catch (error) {
-      console.error('Error in createCommunity:', error);
-      throw error;
+      console.error('Error in createCommunity:', error)
+      throw error
     }
   }
 
   async getCommunity(id: string): Promise<Community | undefined> {
     try {
-      const client = this.checkSupabase();
-      const { data, error } = await client
-        .from('communities')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const client = this.checkSupabase()
+      const { data, error } = await client.from('communities').select('*').eq('id', id).single()
       if (error) {
-        console.error('Error fetching community:', error);
-        return undefined;
+        console.error('Error fetching community:', error)
+        return undefined
       }
-      return data as Community;
+      return data as Community
     } catch (error) {
-      console.error('Error in getCommunity:', error);
-      return undefined;
+      console.error('Error in getCommunity:', error)
+      return undefined
     }
   }
 
   async listCommunitiesForUser(userId: string): Promise<Community[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('community_members')
         .select('communities(*)')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
       if (error) {
-        console.error('Error listing communities for user:', error);
-        return [];
+        console.error('Error listing communities for user:', error)
+        return []
       }
-      return (data || []).map((r: any) => r.communities) as Community[];
+      return (data || []).map((r: any) => r.communities) as Community[]
     } catch (error) {
-      console.error('Error in listCommunitiesForUser:', error);
-      return [];
+      console.error('Error in listCommunitiesForUser:', error)
+      return []
     }
   }
 
-  async joinCommunity(communityId: string, userId: string, role = 'member'): Promise<CommunityMember> {
+  async joinCommunity(
+    communityId: string,
+    userId: string,
+    role = 'member'
+  ): Promise<CommunityMember> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       // Prevent duplicate joins
       const { data: existing, error: selectError } = await client
         .from('community_members')
         .select('*')
         .eq('community_id', communityId)
         .eq('user_id', userId)
-        .limit(1);
+        .limit(1)
 
-      if (selectError) throw selectError;
+      if (selectError) throw selectError
 
       if (existing && existing.length > 0) {
-        return existing[0] as CommunityMember;
+        return existing[0] as CommunityMember
       }
 
       const { data, error } = await client
         .from('community_members')
         .insert([{ community_id: communityId, user_id: userId, role }])
         .select()
-        .single();
-      if (error) throw error;
-      return data as CommunityMember;
+        .single()
+      if (error) throw error
+      return data as CommunityMember
     } catch (error) {
-      console.error('Error in joinCommunity:', error);
-      throw error;
+      console.error('Error in joinCommunity:', error)
+      throw error
     }
   }
-  
+
   async leaveCommunity(communityId: string, userId: string): Promise<void> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       // First, check if the user is the owner
       const { data: community, error: fetchError } = await client
         .from('communities')
         .select('owner_id')
         .eq('id', communityId)
-        .single();
+        .single()
 
-      if (fetchError) throw fetchError;
+      if (fetchError) throw fetchError
 
       if (community && community.owner_id === userId) {
-        throw new Error('Community owner cannot leave the community.');
+        throw new Error('Community owner cannot leave the community.')
       }
 
       // If not the owner, proceed to delete the membership
@@ -361,186 +389,207 @@ export class SupabaseStorage implements IStorage {
         .from('community_members')
         .delete()
         .eq('community_id', communityId)
-        .eq('user_id', userId);
+        .eq('user_id', userId)
 
-      if (deleteError) throw deleteError;
-
+      if (deleteError) throw deleteError
     } catch (error) {
-      console.error('Error in leaveCommunity:', error);
-      throw error;
+      console.error('Error in leaveCommunity:', error)
+      throw error
     }
   }
 
   async searchPublicCommunities(q = '', page = 1, pageSize = 20): Promise<Community[]> {
     try {
-      const client = this.checkSupabase();
-      const offset = (page - 1) * pageSize;
+      const client = this.checkSupabase()
+      const offset = (page - 1) * pageSize
 
-      let query = client.from('communities').select('*').eq('visibility', 'public').order('created_at', { ascending: false }).range(offset, offset + pageSize - 1);
+      let query = client
+        .from('communities')
+        .select('*')
+        .eq('visibility', 'public')
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
 
       if (q && q.trim().length > 0) {
-        const term = `%${q.trim()}%`;
-        query = client.from('communities').select('*').eq('visibility', 'public').or(`name.ilike.${term},description.ilike.${term}`).order('created_at', { ascending: false }).range(offset, offset + pageSize - 1);
+        const term = `%${q.trim()}%`
+        query = client
+          .from('communities')
+          .select('*')
+          .eq('visibility', 'public')
+          .or(`name.ilike.${term},description.ilike.${term}`)
+          .order('created_at', { ascending: false })
+          .range(offset, offset + pageSize - 1)
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return (data || []) as Community[];
+      const { data, error } = await query
+      if (error) throw error
+      return (data || []) as Community[]
     } catch (error) {
-      console.error('Error in searchPublicCommunities:', error);
-      return [];
+      console.error('Error in searchPublicCommunities:', error)
+      return []
     }
   }
 
-  async createChannel(communityId: string, name: string, type = 'text', isPrivate = false): Promise<Channel> {
+  async createChannel(
+    communityId: string,
+    name: string,
+    type = 'text',
+    isPrivate = false
+  ): Promise<Channel> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('channels')
         .insert([{ community_id: communityId, name, type, is_private: isPrivate }])
         .select()
-        .single();
-      if (error) throw error;
-      return data as Channel;
+        .single()
+      if (error) throw error
+      return data as Channel
     } catch (error) {
-      console.error('Error in createChannel:', error);
-      throw error;
+      console.error('Error in createChannel:', error)
+      throw error
     }
   }
 
   async getChannelsForCommunity(communityId: string): Promise<Channel[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('channels')
         .select('*')
         .eq('community_id', communityId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
       if (error) {
-        console.error('Error fetching channels:', error);
-        return [];
+        console.error('Error fetching channels:', error)
+        return []
       }
-      return data as Channel[];
+      return data as Channel[]
     } catch (error) {
-      console.error('Error in getChannelsForCommunity:', error);
-      return [];
+      console.error('Error in getChannelsForCommunity:', error)
+      return []
     }
   }
 
   async getCommunityMembers(communityId: string): Promise<any[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('community_members')
         .select('*, profiles(username, full_name, avatar_url)')
         .eq('community_id', communityId)
-        .order('joined_at', { ascending: true });
+        .order('joined_at', { ascending: true })
       if (error) {
-        console.error('Error fetching community members:', error);
-        return [];
+        console.error('Error fetching community members:', error)
+        return []
       }
-      return data || [];
+      return data || []
     } catch (error) {
-      console.error('Error in getCommunityMembers:', error);
-      return [];
+      console.error('Error in getCommunityMembers:', error)
+      return []
     }
   }
 
   async getUserRoleInCommunity(communityId: string, userId: string): Promise<string | null> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('community_members')
         .select('role')
         .eq('community_id', communityId)
         .eq('user_id', userId)
-        .single();
+        .single()
 
       if (error) {
-        console.error('Error fetching user role:', error);
-        return null;
+        console.error('Error fetching user role:', error)
+        return null
       }
 
-      return data ? data.role : null;
+      return data ? data.role : null
     } catch (error) {
-      console.error('Error in getUserRoleInCommunity:', error);
-      return null;
+      console.error('Error in getUserRoleInCommunity:', error)
+      return null
     }
   }
 
-  async sendChannelMessage(channelId: string, senderId: string, content: string): Promise<ChannelMessage> {
+  async sendChannelMessage(
+    channelId: string,
+    senderId: string,
+    content: string
+  ): Promise<ChannelMessage> {
     try {
-      const client = this.checkSupabase();
-      const encryptedContent = encrypt(content);
+      const client = this.checkSupabase()
+      const encryptedContent = encrypt(content)
       const { data, error } = await client
         .from('channel_messages')
         .insert([{ channel_id: channelId, sender_id: senderId, content: encryptedContent }])
         .select()
-        .single();
-      if (error) throw error;
-      return { ...data, content } as ChannelMessage;
+        .single()
+      if (error) throw error
+      return { ...data, content } as ChannelMessage
     } catch (error) {
-      console.error('Error in sendChannelMessage:', error);
-      throw error;
+      console.error('Error in sendChannelMessage:', error)
+      throw error
     }
   }
 
   async getChannelMessages(channelId: string): Promise<ChannelMessage[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('channel_messages')
         .select('*, profiles(username, full_name, avatar_url)')
         .eq('channel_id', channelId)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
       if (error) {
-        console.error('Error fetching channel messages:', error);
-        return [];
+        console.error('Error fetching channel messages:', error)
+        return []
       }
-      const messages = (data as any[]).map(msg => ({
+      const messages = (data as any[]).map((msg) => ({
         ...msg,
-        content: isEncrypted(msg.content) ? decrypt(msg.content) : msg.content
-      }));
-      return messages;
+        content: isEncrypted(msg.content) ? decrypt(msg.content) : msg.content,
+      }))
+      return messages
     } catch (error) {
-      console.error('Error in getChannelMessages:', error);
-      return [];
+      console.error('Error in getChannelMessages:', error)
+      return []
     }
   }
 
   async setMessageRead(messageId: string): Promise<void> {
     try {
-      const client = this.checkSupabase();
-      const { error } = await client
-        .from('messages')
-        .update({ read: true })
-        .eq('id', messageId)
-      if (error) throw error;
+      const client = this.checkSupabase()
+      const { error } = await client.from('messages').update({ read: true }).eq('id', messageId)
+      if (error) throw error
     } catch (error) {
-      console.error('Error in setMessageRead:', error);
-      throw error;
+      console.error('Error in setMessageRead:', error)
+      throw error
     }
   }
 
-  async toggleMessageReaction(messageId: string, userId: string, reaction: string, isChannelMessage = false): Promise<MessageReaction | null> {
+  async toggleMessageReaction(
+    messageId: string,
+    userId: string,
+    reaction: string,
+    isChannelMessage = false
+  ): Promise<MessageReaction | null> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       // Check existing - support both message types
       const query = client
         .from('message_reactions')
         .select('*')
         .eq('user_id', userId)
-        .eq('reaction', reaction);
-      
-      if (isChannelMessage) {
-        query.eq('channel_message_id', messageId);
-      } else {
-        query.eq('message_id', messageId);
-      }
-      
-      const { data: existing, error: selectError } = await query;
+        .eq('reaction', reaction)
 
-      if (selectError) throw selectError;
+      if (isChannelMessage) {
+        query.eq('channel_message_id', messageId)
+      } else {
+        query.eq('message_id', messageId)
+      }
+
+      const { data: existing, error: selectError } = await query
+
+      if (selectError) throw selectError
 
       if (existing && existing.length > 0) {
         // Remove
@@ -548,123 +597,129 @@ export class SupabaseStorage implements IStorage {
           .from('message_reactions')
           .delete()
           .eq('id', existing[0].id)
-        if (delError) throw delError;
-        return null;
+        if (delError) throw delError
+        return null
       }
 
       // Insert - support both message types
       const reactionData: any = {
         user_id: userId,
-        reaction
-      };
-      if (isChannelMessage) {
-        reactionData.channel_message_id = messageId;
-      } else {
-        reactionData.message_id = messageId;
+        reaction,
       }
-      
+      if (isChannelMessage) {
+        reactionData.channel_message_id = messageId
+      } else {
+        reactionData.message_id = messageId
+      }
+
       const { data, error } = await client
         .from('message_reactions')
         .insert([reactionData])
         .select()
-        .single();
-      if (error) throw error;
-      return data as MessageReaction;
+        .single()
+      if (error) throw error
+      return data as MessageReaction
     } catch (error) {
-      console.error('Error in toggleMessageReaction:', error);
-      throw error;
+      console.error('Error in toggleMessageReaction:', error)
+      throw error
     }
   }
 
   async createLiveSession(channelId: string, hostId: string, title = ''): Promise<LiveSession> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('live_sessions')
         .insert([{ channel_id: channelId, host_id: hostId, title, is_live: true }])
         .select()
-        .single();
-      if (error) throw error;
-      return data as LiveSession;
+        .single()
+      if (error) throw error
+      return data as LiveSession
     } catch (error) {
-      console.error('Error in createLiveSession:', error);
-      throw error;
+      console.error('Error in createLiveSession:', error)
+      throw error
     }
   }
 
   async endLiveSession(sessionId: string): Promise<void> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { error } = await client
         .from('live_sessions')
         .update({ is_live: false, ended_at: new Date().toISOString() })
         .eq('id', sessionId)
-      if (error) throw error;
+      if (error) throw error
     } catch (error) {
-      console.error('Error in endLiveSession:', error);
-      throw error;
+      console.error('Error in endLiveSession:', error)
+      throw error
     }
   }
 
   // Posts methods
   async getPosts(userId?: string, limit = 50): Promise<Post[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       let query = client
         .from('posts')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(limit);
+        .limit(limit)
 
       if (userId) {
-        query = query.eq('user_id', userId);
+        query = query.eq('user_id', userId)
       }
 
-      const { data, error } = await query;
+      const { data, error } = await query
       if (error) {
         // If table doesn't exist, return empty array
         if (error.message && error.message.includes('relation "public.posts" does not exist')) {
-          console.log('Posts table does not exist yet, returning empty array');
-          return [];
+          console.log('Posts table does not exist yet, returning empty array')
+          return []
         }
-        throw error;
+        throw error
       }
-      return data as Post[];
+      return data as Post[]
     } catch (error) {
-      console.error('Error in getPosts:', error);
+      console.error('Error in getPosts:', error)
       // If it's a table not found error, return empty array
       if (error.message && error.message.includes('does not exist')) {
-        return [];
+        return []
       }
-      throw error;
+      throw error
     }
   }
 
   async createPost(userId: string, content: string, imageUrl?: string): Promise<Post> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('posts')
         .insert([{ user_id: userId, content, image_url: imageUrl }])
         .select()
-        .single();
+        .single()
       if (error) {
         // If table doesn't exist, throw a more helpful error
         if (error.message && error.message.includes('relation "public.posts" does not exist')) {
-          throw new Error('Posts table does not exist. Please create the posts table in your database first.');
+          throw new Error(
+            'Posts table does not exist. Please create the posts table in your database first.'
+          )
         }
-        throw error;
+        throw error
       }
-      return data as Post;
+      return data as Post
     } catch (error) {
-      console.error('Error in createPost:', error);
-      throw error;
+      console.error('Error in createPost:', error)
+      throw error
     }
   }
 
-  async togglePostReaction(postId: string, userId: string, reaction: string): Promise<PostReaction | null> {
+  async togglePostReaction(
+    postId: string,
+    userId: string,
+    reaction: string
+  ): Promise<PostReaction | null> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
 
       // Check if reaction already exists
       const { data: existing, error: fetchError } = await client
@@ -673,14 +728,20 @@ export class SupabaseStorage implements IStorage {
         .eq('post_id', postId)
         .eq('user_id', userId)
         .eq('reaction', reaction)
-        .single();
+        .single()
 
-      if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows returned
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 = no rows returned
         // If table doesn't exist, throw helpful error
-        if (fetchError.message && fetchError.message.includes('relation "public.post_reactions" does not exist')) {
-          throw new Error('Post reactions table does not exist. Please create the post_reactions table in your database first.');
+        if (
+          fetchError.message &&
+          fetchError.message.includes('relation "public.post_reactions" does not exist')
+        ) {
+          throw new Error(
+            'Post reactions table does not exist. Please create the post_reactions table in your database first.'
+          )
         }
-        throw fetchError;
+        throw fetchError
       }
 
       if (existing) {
@@ -688,71 +749,77 @@ export class SupabaseStorage implements IStorage {
         const { error: deleteError } = await client
           .from('post_reactions')
           .delete()
-          .eq('id', existing.id);
-        if (deleteError) throw deleteError;
-        return null;
+          .eq('id', existing.id)
+        if (deleteError) throw deleteError
+        return null
       } else {
         // Add new reaction
         const { data, error } = await client
           .from('post_reactions')
           .insert([{ post_id: postId, user_id: userId, reaction }])
           .select()
-          .single();
+          .single()
         if (error) {
           // If table doesn't exist, throw helpful error
-          if (error.message && error.message.includes('relation "public.post_reactions" does not exist')) {
-            throw new Error('Post reactions table does not exist. Please create the post_reactions table in your database first.');
+          if (
+            error.message &&
+            error.message.includes('relation "public.post_reactions" does not exist')
+          ) {
+            throw new Error(
+              'Post reactions table does not exist. Please create the post_reactions table in your database first.'
+            )
           }
-          throw error;
+          throw error
         }
-        return data as PostReaction;
+        return data as PostReaction
       }
     } catch (error) {
-      console.error('Error in togglePostReaction:', error);
-      throw error;
+      console.error('Error in togglePostReaction:', error)
+      throw error
     }
   }
 
   async getPostReactions(postId: string): Promise<PostReaction[]> {
     try {
-      const client = this.checkSupabase();
+      const client = this.checkSupabase()
       const { data, error } = await client
         .from('post_reactions')
         .select('*')
         .eq('post_id', postId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
       if (error) {
         // If table doesn't exist, return empty array
-        if (error.message && error.message.includes('relation "public.post_reactions" does not exist')) {
-          console.log('Post reactions table does not exist yet, returning empty array');
-          return [];
+        if (
+          error.message &&
+          error.message.includes('relation "public.post_reactions" does not exist')
+        ) {
+          console.log('Post reactions table does not exist yet, returning empty array')
+          return []
         }
-        throw error;
+        throw error
       }
-      return data as PostReaction[];
+      return data as PostReaction[]
     } catch (error) {
-      console.error('Error in getPostReactions:', error);
+      console.error('Error in getPostReactions:', error)
       // If it's a table not found error, return empty array
       if (error.message && error.message.includes('does not exist')) {
-        return [];
+        return []
       }
-      throw error;
+      throw error
     }
   }
 
   async applyCloudinaryTransformation(publicId: string, transformation: any): Promise<string> {
     try {
-      return cloudinary.url(publicId, transformation);
+      return cloudinary.url(publicId, transformation)
     } catch (error) {
-      console.error('Error applying Cloudinary transformation:', error);
-      throw error;
+      console.error('Error applying Cloudinary transformation:', error)
+      throw error
     }
   }
 }
 
-export const storage = new SupabaseStorage();
-
-
+export const storage = new SupabaseStorage()
 
 // Buzly Web App
 // Owner: YA SO

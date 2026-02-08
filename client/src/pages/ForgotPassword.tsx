@@ -1,12 +1,12 @@
-import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/AuthContext'
-import { useLocation } from 'wouter'
-import { Key } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
+import { Key } from 'lucide-react'
+import { useState } from 'react'
+import { useLocation } from 'wouter'
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
@@ -69,11 +69,7 @@ export default function ForgotPassword() {
                 />
               </div>
 
-              <Button
-                type="submit"
-                className="w-full neon-glow-strong"
-                disabled={loading}
-              >
+              <Button type="submit" className="w-full neon-glow-strong" disabled={loading}>
                 {loading ? 'Sending...' : 'Send Reset Link'}
               </Button>
             </form>
@@ -88,10 +84,7 @@ export default function ForgotPassword() {
                 </p>
               </div>
 
-              <Button
-                onClick={() => setLocation('/auth')}
-                className="w-full neon-glow-strong"
-              >
+              <Button onClick={() => setLocation('/auth')} className="w-full neon-glow-strong">
                 Back to Sign In
               </Button>
 

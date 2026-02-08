@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { formatDistanceToNow } from 'date-fns'
+import { ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface Story {
   id: string
@@ -81,9 +82,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
               <div
                 className="h-full bg-white transition-all duration-100"
                 style={{
-                  width: `${
-                    index < currentIndex ? 100 : index === currentIndex ? progress : 0
-                  }%`,
+                  width: `${index < currentIndex ? 100 : index === currentIndex ? progress : 0}%`,
                 }}
               />
             </div>
@@ -107,11 +106,11 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
               <p className="text-xs opacity-80">
                 {(() => {
                   try {
-                    const d = new Date(currentStory.created_at);
-                    if (!currentStory.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف';
-                    return formatDistanceToNow(d, { addSuffix: true });
+                    const d = new Date(currentStory.created_at)
+                    if (!currentStory.created_at || isNaN(d.getTime())) return 'تاريخ غير معروف'
+                    return formatDistanceToNow(d, { addSuffix: true })
                   } catch {
-                    return 'تاريخ غير معروف';
+                    return 'تاريخ غير معروف'
                   }
                 })()}
               </p>
@@ -136,8 +135,9 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
               alt="Story"
               className="max-w-full max-h-full object-contain"
               onError={(e) => {
-                console.error('Failed to load story image:', currentStory.media_url)
-                e.currentTarget.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 600%22%3E%3Crect fill=%22%23333%22 width=%22400%22 height=%22600%22/%3E%3Ctext x=%22200%22 y=%22300%22 fill=%22%23999%22 text-anchor=%22middle%22 font-size=%2220%22%3EImage not available%3C/text%3E%3C/svg%3E'
+                ErrorLogger.log('Failed to load story image:', currentStory.media_url)
+                e.currentTarget.src =
+                  'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 600%22%3E%3Crect fill=%22%23333%22 width=%22400%22 height=%22600%22/%3E%3Ctext x=%22200%22 y=%22300%22 fill=%22%23999%22 text-anchor=%22middle%22 font-size=%2220%22%3EImage not available%3C/text%3E%3C/svg%3E'
               }}
             />
           ) : (
@@ -148,7 +148,9 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
               autoPlay
               muted
               playsInline
-              onError={(e) => console.error('Failed to load story video:', currentStory.media_url)}
+              onError={(e) =>
+                ErrorLogger.log('Failed to load story video:', currentStory.media_url)
+              }
             />
           )}
 
@@ -159,11 +161,7 @@ export default function StoryViewer({ stories, initialIndex, onClose }: StoryVie
               onClick={goToPrevious}
               disabled={isFirstStory}
             />
-            <button
-              className="flex-1 cursor-pointer"
-              onClick={goToNext}
-              disabled={isLastStory}
-            />
+            <button className="flex-1 cursor-pointer" onClick={goToNext} disabled={isLastStory} />
           </div>
 
           {/* Navigation buttons */}

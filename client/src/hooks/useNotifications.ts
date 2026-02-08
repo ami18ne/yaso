@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
 
 export interface Notification {
   id: string
@@ -59,7 +59,9 @@ export function useMarkNotificationRead() {
         if (error) throw new Error(`Failed to mark notification as read: ${error.message}`)
       } catch (error) {
         logger.error('Error in useMarkNotificationRead:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while marking notification as read')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while marking notification as read')
       }
     },
     onSuccess: () => {
@@ -94,7 +96,9 @@ export function useMarkAllNotificationsRead() {
         if (error) throw new Error(`Failed to mark all notifications as read: ${error.message}`)
       } catch (error) {
         logger.error('Error in useMarkAllNotificationsRead:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while marking notifications as read')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while marking notifications as read')
       }
     },
     onSuccess: () => {
@@ -118,12 +122,12 @@ export function useCreateNotification() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ 
-      recipientId, 
-      type, 
+    mutationFn: async ({
+      recipientId,
+      type,
       content,
-      postId 
-    }: { 
+      postId,
+    }: {
       recipientId: string
       type: 'like' | 'comment' | 'follow' | 'mention' | 'video' | 'message' | 'call'
       content: string
@@ -135,14 +139,16 @@ export function useCreateNotification() {
 
         const { data, error } = await supabase
           .from('notifications')
-          .insert([{
-            user_id: recipientId,
-            sender_id: user.id,
-            type,
-            content,
-            post_id: postId || null,
-            read: false,
-          }])
+          .insert([
+            {
+              user_id: recipientId,
+              sender_id: user.id,
+              type,
+              content,
+              post_id: postId || null,
+              read: false,
+            },
+          ])
           .select()
           .single()
 
@@ -150,7 +156,9 @@ export function useCreateNotification() {
         return data
       } catch (error) {
         logger.error('Error in useCreateNotification:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while creating notification')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while creating notification')
       }
     },
     onSuccess: () => {

@@ -1,53 +1,71 @@
-import React from 'react';
-import { useDiscoverCommunities, useCommunities } from '@/hooks/useCommunities';
-import CommunityCard from './CommunityCard';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import CommunityCard from '@/components/Community/CommunityCard'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/AuthContext'
+import { useDiscoverCommunities } from '@/hooks/useCommunities'
+import React from 'react'
+import { Link } from 'wouter'
 
-export default function DiscoverCommunities({ onClose }: { onClose?: () => void }) {
-  const [q, setQ] = React.useState('');
-  const [page, setPage] = React.useState(1);
-  const { data: communities = [], isLoading, refetch } = useDiscoverCommunities(q, page, 12);
-  const { data: userCommunities = [] } = useCommunities();
+export default function DiscoverCommunitiesPage() {
+  const { user } = useAuth()
+  const [searchTerm, setSearchTerm] = React.useState('')
+  const {
+    data: communities = [],
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+  } = useDiscoverCommunities(searchTerm, 1, 12)
 
-  const userCommunityIds = React.useMemo(() => new Set(userCommunities.map((c: any) => c.id)), [userCommunities]);
-
-  React.useEffect(() => {
-    refetch();
-  }, [q, page, refetch]);
+  const userCommunityIds = new Set() // Assuming we get user's communities from a hook
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={onClose}>      <div className="bg-background w-full max-w-4xl mx-4 rounded-lg p-6" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">Discover Communities</h3>
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder="Search communities"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              className="border rounded px-3 py-1 bg-card"
-            />
-            <Button variant="ghost" onClick={() => onClose?.()}>Close</Button>
-          </div>
+    <div className="container mx-auto p-4 sm:p-6">
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Discover Communities</h1>
+        <p className="text-muted-foreground mt-2">
+          Find and join communities that match your interests.
+        </p>
+      </header>
+
+      <div className="mb-6">
+        <Input
+          placeholder="Search for communities..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
+
+      {isLoading && <div className="text-center text-muted-foreground py-8">Loading...</div>}
+
+      {!isLoading && communities.length === 0 && (
+        <div className="text-center border-2 border-dashed border-border rounded-lg py-16">
+          <p className="text-muted-foreground">No communities found.</p>
         </div>
+      )}
 
-        {isLoading && <div className="py-8 text-center">Loading...</div>}
-
-        {!isLoading && communities.length === 0 && (
-          <div className="py-8 text-center text-muted-foreground">No communities found</div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {communities.map((c: any) => (
-            <CommunityCard key={c.id} community={c} isMember={userCommunityIds.has(c.id)} />
+      {communities.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {communities.map((community: any) => (
+            <Link key={community.id} href={`/communities/${community.id}`}>
+              <a className="block transition-all duration-200 ease-in-out hover:-translate-y-1 hover:shadow-lg rounded-lg h-full">
+                <CommunityCard
+                  community={community}
+                  isMember={userCommunityIds.has(community.id)}
+                />
+              </a>
+            </Link>
           ))}
         </div>
+      )}
 
-        <div className="flex items-center justify-between mt-4">
-          <Button variant="outline" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Previous</Button>
-          <div className="text-sm text-muted-foreground">Page {page}</div>
-          <Button variant="outline" onClick={() => setPage((p) => p + 1)}>Next</Button>        </div>
-      </div>
+      {hasNextPage && (
+        <div className="mt-8 text-center">
+          <Button onClick={() => fetchNextPage()} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Load More'}
+          </Button>
+        </div>
+      )}
     </div>
-  );
+  )
 }

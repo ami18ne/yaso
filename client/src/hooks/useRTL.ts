@@ -1,6 +1,6 @@
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext'
 
 export function useRTL() {
-  const { isRTL } = useLanguage();
-  return isRTL;
+  const { isRTL } = useLanguage()
+  return isRTL
 }

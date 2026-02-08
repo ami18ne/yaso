@@ -1,20 +1,24 @@
-import NotificationsPanel from "@/components/NotificationsPanel";
-import { useNotifications, useMarkNotificationRead, useMarkAllNotificationsRead } from "@/hooks/useNotifications";
-import { formatDistanceToNow } from "date-fns";
-import { Bell, AlertCircle } from "lucide-react";
+import NotificationsPanel from '@/components/NotificationsPanel'
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from '@/hooks/useNotifications'
+import { formatDistanceToNow } from 'date-fns'
+import { AlertCircle, Bell } from 'lucide-react'
 
 export default function Notifications() {
-  const { data: notifications, isLoading, error } = useNotifications();
-  const markAsReadMutation = useMarkNotificationRead();
-  const markAllAsReadMutation = useMarkAllNotificationsRead();
+  const { data: notifications, isLoading, error } = useNotifications()
+  const markAsReadMutation = useMarkNotificationRead()
+  const markAllAsReadMutation = useMarkAllNotificationsRead()
 
   const handleMarkAsRead = async (id: string) => {
-    await markAsReadMutation.mutateAsync(id);
-  };
+    await markAsReadMutation.mutateAsync(id)
+  }
 
   const handleMarkAllAsRead = async () => {
-    await markAllAsReadMutation.mutateAsync();
-  };
+    await markAllAsReadMutation.mutateAsync()
+  }
 
   if (isLoading) {
     return (
@@ -24,7 +28,7 @@ export default function Notifications() {
         </div>
         <p className="text-muted-foreground animate-pulse">Loading notifications...</p>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -38,7 +42,7 @@ export default function Notifications() {
           <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (!notifications || notifications.length === 0) {
@@ -54,21 +58,21 @@ export default function Notifications() {
           </p>
         </div>
       </div>
-    );
+    )
   }
 
-  const formattedNotifications = notifications.map(n => ({
+  const formattedNotifications = notifications.map((n) => ({
     id: n.id,
-    type: n.type as "like" | "comment" | "follow" | "mention" | "video" | "message" | "call",
-    user: { 
-      name: n.profiles?.full_name || n.profiles?.username || "Someone",
+    type: n.type as 'like' | 'comment' | 'follow' | 'mention' | 'video' | 'message' | 'call',
+    user: {
+      name: n.profiles?.full_name || n.profiles?.username || 'Someone',
       username: n.profiles?.username,
-      avatar: n.profiles?.avatar_url || undefined
+      avatar: n.profiles?.avatar_url || undefined,
     },
     message: n.content,
     timestamp: formatDistanceToNow(new Date(n.created_at), { addSuffix: true }),
     isRead: n.read,
-  }));
+  }))
 
   return (
     <NotificationsPanel
@@ -76,5 +80,5 @@ export default function Notifications() {
       onMarkAsRead={handleMarkAsRead}
       onMarkAllAsRead={handleMarkAllAsRead}
     />
-  );
+  )
 }

@@ -79,8 +79,7 @@ export function validatePassword(password: string, minLength = 8): PasswordStren
     feedback.push('Include special characters for better security')
   }
 
-  const strength =
-    score <= 1 ? 'weak' : score <= 2 ? 'fair' : score <= 3 ? 'good' : 'strong'
+  const strength = score <= 1 ? 'weak' : score <= 2 ? 'fair' : score <= 3 ? 'good' : 'strong'
 
   return {
     isValid: score >= 2,
@@ -142,10 +141,7 @@ export function validatePhoneNumber(phone: string): [boolean, string | null] {
 /**
  * Generic field validation with multiple rules
  */
-export function validateField<T>(
-  value: T,
-  rules: ValidationRule<T>[]
-): [boolean, string | null] {
+export function validateField<T>(value: T, rules: ValidationRule<T>[]): [boolean, string | null] {
   for (const rule of rules) {
     const result = rule.validate(value)
     if (result === false) {
@@ -188,10 +184,7 @@ export function validateForm<T extends Record<string, any>>(
  * Input sanitization helpers
  */
 export function sanitizeString(input: string, maxLength = 1000): string {
-  return input
-    .trim()
-    .slice(0, maxLength)
-    .replace(/[<>]/g, '') // Remove dangerous characters
+  return input.trim().slice(0, maxLength).replace(/[<>]/g, '') // Remove dangerous characters
 }
 
 export function sanitizeHtml(input: string): string {

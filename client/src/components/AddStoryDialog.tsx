@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -6,15 +6,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Image, Video, X, Wand2 } from 'lucide-react'
-import { useToast } from '@/hooks/use-toast'
-import { useCreateStory } from '@/hooks/useStories'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useToast } from '@/hooks/use-toast'
+import { useCreateStory } from '@/hooks/useStories'
 import { logger } from '@/lib/logger'
-import MediaEditor from './MediaEditor'
 import type { MusicTrack } from '@/lib/musicLibrary'
+import { Image, Video, Wand2, X } from 'lucide-react'
+import { useRef, useState } from 'react'
+import MediaEditor from './MediaEditor'
 
 interface AddStoryDialogProps {
   open: boolean
@@ -102,8 +102,8 @@ export default function AddStoryDialog({ open, onOpenChange }: AddStoryDialogPro
     if (!mediaType || !user) return
 
     try {
-      await createStoryMutation.mutateAsync({ 
-        file: processedFile, 
+      await createStoryMutation.mutateAsync({
+        file: processedFile,
         mediaType,
       })
       handleRemoveMedia()
@@ -151,7 +151,9 @@ export default function AddStoryDialog({ open, onOpenChange }: AddStoryDialogPro
             {isRTL ? 'إضافة ستوري' : 'Add Story'}
           </DialogTitle>
           <DialogDescription className="text-xs sm:text-sm mt-1">
-            {isRTL ? 'شارك صورة أو فيديو مع فلاتر وموسيقى' : 'Share a photo or video with filters and music'}
+            {isRTL
+              ? 'شارك صورة أو فيديو مع فلاتر وموسيقى'
+              : 'Share a photo or video with filters and music'}
           </DialogDescription>
         </DialogHeader>
 
@@ -159,15 +161,28 @@ export default function AddStoryDialog({ open, onOpenChange }: AddStoryDialogPro
           {previewUrl ? (
             <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
               <button
+                type="button"
                 onClick={handleRemoveMedia}
                 className="absolute top-2 right-2 z-10 bg-black/80 rounded-full p-1.5 hover-elevate"
               >
                 <X className="h-4 w-4 sm:h-5 sm:w-5 text-white" strokeWidth={2} />
               </button>
               {mediaType === 'image' ? (
-                <img src={previewUrl} loading="eager" alt="Preview" className="max-w-full max-h-full object-contain" />
+                <img
+                  src={previewUrl}
+                  loading="eager"
+                  alt="Preview"
+                  className="max-w-full max-h-full object-contain"
+                />
               ) : (
-                <video src={previewUrl} preload="metadata" className="max-w-full max-h-full object-contain" controls />
+                <video
+                  src={previewUrl}
+                  preload="metadata"
+                  className="max-w-full max-h-full object-contain"
+                  controls
+                >
+                  <track kind="captions" />
+                </video>
               )}
             </div>
           ) : (

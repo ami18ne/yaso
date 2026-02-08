@@ -1,33 +1,33 @@
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import {
-  Search,
-  Play,
-  Pause,
-  Heart,
-  TrendingUp,
-  Sparkles,
-  Star,
-  Music,
-  X,
-  Volume2,
-  Check
-} from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useLanguage } from '@/contexts/LanguageContext'
 import {
-  musicLibraryManager,
-  musicLibrary,
+  type MusicGenre,
+  type MusicMood,
+  type MusicTrack,
   categoryLabels,
   genreLabels,
   moodLabels,
-  type MusicTrack,
-  type MusicGenre,
-  type MusicMood
+  musicLibrary,
+  musicLibraryManager,
 } from '@/lib/musicLibrary'
-import { useLanguage } from '@/contexts/LanguageContext'
+import {
+  Check,
+  Heart,
+  Music,
+  Pause,
+  Play,
+  Search,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Volume2,
+  X,
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface MusicBrowserProps {
   onSelect: (track: MusicTrack) => void
@@ -108,8 +108,27 @@ export default function MusicBrowser({ onSelect, onClose, selectedTrack }: Music
     setSearchQuery('')
   }
 
-  const genres: MusicGenre[] = ['pop', 'hiphop', 'electronic', 'rock', 'rnb', 'arabic', 'classical', 'jazz', 'ambient']
-  const moods: MusicMood[] = ['happy', 'sad', 'energetic', 'calm', 'romantic', 'dramatic', 'funny', 'inspirational']
+  const genres: MusicGenre[] = [
+    'pop',
+    'hiphop',
+    'electronic',
+    'rock',
+    'rnb',
+    'arabic',
+    'classical',
+    'jazz',
+    'ambient',
+  ]
+  const moods: MusicMood[] = [
+    'happy',
+    'sad',
+    'energetic',
+    'calm',
+    'romantic',
+    'dramatic',
+    'funny',
+    'inspirational',
+  ]
   const displayTracks = getDisplayTracks()
 
   return (
@@ -148,7 +167,14 @@ export default function MusicBrowser({ onSelect, onClose, selectedTrack }: Music
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); clearFilters(); }} className="flex-1 flex flex-col">
+      <Tabs
+        value={activeTab}
+        onValueChange={(v) => {
+          setActiveTab(v)
+          clearFilters()
+        }}
+        className="flex-1 flex flex-col"
+      >
         <TabsList className="grid grid-cols-4 mx-4 bg-muted/50">
           <TabsTrigger value="trending" className="gap-1 text-xs">
             <TrendingUp className="h-3 w-3" />
@@ -202,7 +228,12 @@ export default function MusicBrowser({ onSelect, onClose, selectedTrack }: Music
           </ScrollArea>
 
           {(selectedGenre || selectedMood || searchQuery) && (
-            <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs text-muted-foreground">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="text-xs text-muted-foreground"
+            >
               {isRTL ? 'مسح الفلاتر' : 'Clear filters'}
             </Button>
           )}
@@ -224,9 +255,7 @@ export default function MusicBrowser({ onSelect, onClose, selectedTrack }: Music
                   <div
                     key={track.id}
                     className={`flex items-center gap-3 p-3 rounded-xl transition-all cursor-pointer ${
-                      isSelected
-                        ? 'bg-primary/20 ring-2 ring-primary'
-                        : 'hover:bg-muted/50'
+                      isSelected ? 'bg-primary/20 ring-2 ring-primary' : 'hover:bg-muted/50'
                     }`}
                     onClick={() => handleSelectTrack(track)}
                   >
@@ -269,7 +298,8 @@ export default function MusicBrowser({ onSelect, onClose, selectedTrack }: Music
                         </span>
                         {track.usageCount && (
                           <span className="text-xs text-muted-foreground">
-                            • {musicLibraryManager.formatUsageCount(track.usageCount)} {isRTL ? 'استخدام' : 'uses'}
+                            • {musicLibraryManager.formatUsageCount(track.usageCount)}{' '}
+                            {isRTL ? 'استخدام' : 'uses'}
                           </span>
                         )}
                       </div>

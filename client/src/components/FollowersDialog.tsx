@@ -1,15 +1,10 @@
-import { useLocation } from 'wouter'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
-import UserAvatar from './UserAvatar'
-import { useFollowers, useFollowing, useFollowUser, useIsFollowing } from '@/hooks/useProfiles'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useAuth } from '@/contexts/AuthContext'
+import { useFollowUser, useFollowers, useFollowing, useIsFollowing } from '@/hooks/useProfiles'
+import { useLocation } from 'wouter'
+import UserAvatar from './UserAvatar'
 
 interface FollowersDialogProps {
   open: boolean
@@ -34,7 +29,7 @@ function UserItem({ user, onClose }: UserItemProps) {
   const { user: currentUser } = useAuth()
   const { data: isFollowing = false } = useIsFollowing(user.id)
   const followMutation = useFollowUser()
-  
+
   const isOwnProfile = currentUser?.id === user.id
 
   const handleProfileClick = () => {
@@ -50,26 +45,22 @@ function UserItem({ user, onClose }: UserItemProps) {
   return (
     <div className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-colors">
       <button onClick={handleProfileClick} className="flex items-center gap-3 flex-1">
-        <UserAvatar
-          src={user.avatar_url}
-          name={user.username}
-          size="md"
-        />
+        <UserAvatar src={user.avatar_url} name={user.username} size="md" />
         <div className="text-left">
           <p className="font-medium text-sm">{user.full_name || user.username}</p>
           <p className="text-xs text-muted-foreground">@{user.username}</p>
         </div>
       </button>
-      
+
       {!isOwnProfile && (
         <Button
           size="sm"
-          variant={isFollowing ? "outline" : "default"}
+          variant={isFollowing ? 'outline' : 'default'}
           className="rounded-full text-xs h-8"
           onClick={handleFollowToggle}
           disabled={followMutation.isPending}
         >
-          {isFollowing ? "Following" : "Follow"}
+          {isFollowing ? 'Following' : 'Follow'}
         </Button>
       )}
     </div>
@@ -83,9 +74,13 @@ export default function FollowersDialog({
   type,
   title,
 }: FollowersDialogProps) {
-  const { data: followers = [], isLoading: loadingFollowers } = useFollowers(type === 'followers' ? userId : undefined)
-  const { data: following = [], isLoading: loadingFollowing } = useFollowing(type === 'following' ? userId : undefined)
-  
+  const { data: followers = [], isLoading: loadingFollowers } = useFollowers(
+    type === 'followers' ? userId : undefined
+  )
+  const { data: following = [], isLoading: loadingFollowing } = useFollowing(
+    type === 'following' ? userId : undefined
+  )
+
   const users = type === 'followers' ? followers : following
   const isLoading = type === 'followers' ? loadingFollowers : loadingFollowing
   const dialogTitle = title || (type === 'followers' ? 'Followers' : 'Following')
@@ -105,11 +100,7 @@ export default function FollowersDialog({
               </div>
             ) : users.length > 0 ? (
               users.map((user: any) => (
-                <UserItem
-                  key={user.id}
-                  user={user}
-                  onClose={() => onOpenChange(false)}
-                />
+                <UserItem key={user.id} user={user} onClose={() => onOpenChange(false)} />
               ))
             ) : (
               <div className="text-center py-12 text-muted-foreground">

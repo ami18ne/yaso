@@ -1,17 +1,17 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface ChatListItemProps {
-  id: string;
-  name: string;
-  avatar?: string;
-  lastMessage: string;
-  timestamp: string;
-  unreadCount?: number;
-  isOnline?: boolean;
-  isActive?: boolean;
-  onClick?: () => void;
+  id: string
+  name: string
+  avatar?: string
+  lastMessage: string
+  timestamp: string
+  unreadCount?: number
+  isOnline?: boolean
+  isActive?: boolean
+  onClick?: () => void
 }
 
 export default function ChatListItem({
@@ -29,9 +29,9 @@ export default function ChatListItem({
       onClick={onClick}
       data-testid={`chat-item-${name.toLowerCase().replace(/\s/g, '-')}`}
       className={cn(
-        "flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all duration-200",
-        "hover-elevate active-elevate-2",
-        isActive && "bg-sidebar-accent"
+        'flex items-center gap-3 p-4 rounded-lg cursor-pointer transition-all duration-200',
+        'hover-elevate active-elevate-2',
+        isActive && 'bg-sidebar-accent'
       )}
     >
       <div className="relative">
@@ -64,5 +64,5 @@ export default function ChatListItem({
         </Badge>
       )}
     </div>
-  );
+  )
 }

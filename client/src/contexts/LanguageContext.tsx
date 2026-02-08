@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { type ReactNode, createContext, useContext, useEffect, useState } from 'react'
 
 type Language = 'en' | 'ar'
 
@@ -81,7 +81,7 @@ const translations: Record<Language, Record<string, string>> = {
     'language.arabic': 'العربية',
     'common.enabled': 'مفعّل',
     'common.disabled': 'معطّل',
-  }
+  },
 }
 
 const LANGUAGE_STORAGE_KEY = 'buzly_language'

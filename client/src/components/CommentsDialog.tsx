@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useLocation } from 'wouter'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,20 +7,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { MessageCircle, Mic, X, Heart, Smile } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { logger } from '@/lib/logger'
-import VoiceRecorder from './VoiceRecorder'
-import VoiceMessage from './VoiceMessage'
-import ReactionPicker from './ReactionPicker'
-import EmojiPicker from './EmojiPicker'
-import { cn } from '@/lib/utils'
 import { uploadVoiceComment } from '@/lib/storage'
+import { cn } from '@/lib/utils'
+import { Heart, MessageCircle, Mic, Smile, X } from 'lucide-react'
+import { useState } from 'react'
+import { useLocation } from 'wouter'
+import EmojiPicker from './EmojiPicker'
+import ReactionPicker from './ReactionPicker'
+import VoiceMessage from './VoiceMessage'
+import VoiceRecorder from './VoiceRecorder'
 
 interface Comment {
   id: string
@@ -98,11 +98,11 @@ export default function CommentsDialog({
 
     try {
       const uploadResult = await uploadVoiceComment(audioBlob, user.id)
-      
+
       if (onAddComment) {
         await onAddComment(uploadResult.url, true, audioBlob)
       }
-      
+
       setShowVoiceRecorder(false)
       toast({
         title: 'Voice comment added!',
@@ -119,7 +119,7 @@ export default function CommentsDialog({
   }
 
   const handleLikeComment = (commentId: string) => {
-    setLikedComments(prev => {
+    setLikedComments((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(commentId)) {
         newSet.delete(commentId)
@@ -152,8 +152,8 @@ export default function CommentsDialog({
           <div className="space-y-4 py-2">
             {comments.length > 0 ? (
               comments.map((comment) => (
-                <div 
-                  key={comment.id} 
+                <div
+                  key={comment.id}
                   className="flex gap-3 transition-all duration-200 hover:bg-primary/5 rounded-lg p-2 -mx-2 group"
                 >
                   <button onClick={() => setLocation(`/profile/${comment.user.username}`)}>
@@ -174,9 +174,14 @@ export default function CommentsDialog({
                       </button>
                       <p className="text-xs text-muted-foreground">{comment.timestamp}</p>
                     </div>
-                    
-                    {(comment.isVoice && comment.voiceUrl) || 
-                     (comment.content && (comment.content.includes('supabase') || comment.content.includes('.mp3') || comment.content.includes('.webm') || comment.content.includes('.ogg') || comment.content.includes('/voice-comments/'))) ? (
+
+                    {(comment.isVoice && comment.voiceUrl) ||
+                    (comment.content &&
+                      (comment.content.includes('supabase') ||
+                        comment.content.includes('.mp3') ||
+                        comment.content.includes('.webm') ||
+                        comment.content.includes('.ogg') ||
+                        comment.content.includes('/voice-comments/'))) ? (
                       <VoiceMessage
                         audioUrl={comment.voiceUrl || comment.content}
                         duration={comment.voiceDuration || 0}
@@ -184,51 +189,51 @@ export default function CommentsDialog({
                     ) : (
                       <p className="text-sm leading-relaxed">{comment.content}</p>
                     )}
-                    
+
                     <div className="flex items-center gap-3 mt-2">
                       <div className="relative">
-                        <button 
+                        <button
                           className={cn(
-                            "text-xs flex items-center gap-1 transition-colors",
-                            likedComments.has(comment.id) 
-                              ? "text-red-500" 
-                              : "text-muted-foreground hover:text-red-500"
+                            'text-xs flex items-center gap-1 transition-colors',
+                            likedComments.has(comment.id)
+                              ? 'text-red-500'
+                              : 'text-muted-foreground hover:text-red-500'
                           )}
                           onClick={() => handleLikeComment(comment.id)}
                           onMouseEnter={() => setActiveReactionPicker(comment.id)}
                         >
-                          <Heart 
+                          <Heart
                             className={cn(
-                              "h-3.5 w-3.5",
-                              likedComments.has(comment.id) && "fill-current"
-                            )} 
+                              'h-3.5 w-3.5',
+                              likedComments.has(comment.id) && 'fill-current'
+                            )}
                           />
                           Like
                         </button>
-                        
+
                         <ReactionPicker
                           isOpen={activeReactionPicker === comment.id}
                           onReaction={(emoji) => handleReaction(comment.id, emoji)}
                           onClose={() => setActiveReactionPicker(null)}
                         />
                       </div>
-                      
-                      <button 
+
+                      <button
                         className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
                         onClick={() => {
-                          setNewComment(`@${comment.user.username} `);
+                          setNewComment(`@${comment.user.username} `)
                         }}
                       >
                         <MessageCircle className="h-3 w-3" strokeWidth={2} />
                         Reply
                       </button>
                     </div>
-                    
+
                     {comment.reactions && comment.reactions.length > 0 && (
                       <div className="flex items-center gap-1 mt-1">
                         {comment.reactions.map((reaction, index) => (
-                          <span 
-                            key={index} 
+                          <span
+                            key={index}
                             className="text-xs bg-muted/50 px-1.5 py-0.5 rounded-full"
                           >
                             {reaction.emoji} {reaction.count}
@@ -292,7 +297,7 @@ export default function CommentsDialog({
               />
               <div className="flex flex-col gap-2">
                 <EmojiPicker
-                  onSelect={(emoji) => setNewComment(prev => prev + emoji)}
+                  onSelect={(emoji) => setNewComment((prev) => prev + emoji)}
                   trigger={
                     <Button
                       size="icon"

@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -7,73 +6,75 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
-import { Plus } from "lucide-react";
-import { useCreateCommunity } from "@/hooks/useCommunities";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/hooks/use-toast'
+import { useCreateCommunity } from '@/hooks/useCommunities'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { Plus } from 'lucide-react'
+import { useState } from 'react'
 
 export default function CreateCommunityDialog() {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"public" | "private">("public");
-  const [isLoading, setIsLoading] = useState(false);
-  
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const createCommunityMutation = useCreateCommunity();
+  const [open, setOpen] = useState(false)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [visibility, setVisibility] = useState<'public' | 'private'>('public')
+  const [isLoading, setIsLoading] = useState(false)
+
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const createCommunityMutation = useCreateCommunity()
 
   const handleCreate = async () => {
     if (!name.trim()) {
       toast({
-        title: "Missing name",
-        description: "Please enter a community name.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Missing name',
+        description: 'Please enter a community name.',
+        variant: 'destructive',
+      })
+      return
     }
 
     if (!user) {
       toast({
-        title: "Not logged in",
-        description: "You must be logged in to create a community.",
-        variant: "destructive",
-      });
-      return;
+        title: 'Not logged in',
+        description: 'You must be logged in to create a community.',
+        variant: 'destructive',
+      })
+      return
     }
 
     try {
-      setIsLoading(true);
+      setIsLoading(true)
       await createCommunityMutation.mutateAsync({
         name: name.trim(),
         description: description.trim(),
         visibility,
-      });
+      })
 
       toast({
-        title: "Community created!",
+        title: 'Community created!',
         description: `${name} has been created successfully.`,
-      });
+      })
 
-      setName("");
-      setDescription("");
-      setVisibility("public");
-      setOpen(false);
+      setName('')
+      setDescription('')
+      setVisibility('public')
+      setOpen(false)
     } catch (error) {
-      console.error("Error creating community:", error);
+      ErrorLogger.log('Error creating community:', error)
       toast({
-        title: "Error",
-        description: "Failed to create community. Please try again.",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: 'Failed to create community. Please try again.',
+        variant: 'destructive',
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -125,7 +126,7 @@ export default function CreateCommunityDialog() {
             <select
               id="visibility"
               value={visibility}
-              onChange={(e) => setVisibility(e.target.value as "public" | "private")}
+              onChange={(e) => setVisibility(e.target.value as 'public' | 'private')}
               className="col-span-3 px-3 py-2 border rounded-md border-input bg-background"
               disabled={isLoading}
             >
@@ -135,18 +136,14 @@ export default function CreateCommunityDialog() {
           </div>
         </div>
         <div className="flex gap-2 justify-end">
-          <Button
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={isLoading}>
             Cancel
           </Button>
           <Button onClick={handleCreate} disabled={isLoading}>
-            {isLoading ? "Creating..." : "Create"}
+            {isLoading ? 'Creating...' : 'Create'}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

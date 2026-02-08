@@ -120,7 +120,9 @@ export class Analytics {
         body: JSON.stringify({
           ...event,
           sessionId: this.sessionId,
-          userAgent: navigator.userAgent,
+          userAgent: (navigator as any).userAgentData
+            ? JSON.stringify((navigator as any).userAgentData.toJSON())
+            : undefined,
         }),
       })
     } catch {

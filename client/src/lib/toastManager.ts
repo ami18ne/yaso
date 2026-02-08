@@ -91,7 +91,7 @@ export function useEnhancedToast() {
     showToast({
       title,
       type: 'info',
-      duration: Infinity,
+      duration: Number.POSITIVE_INFINITY,
     })
   }
 

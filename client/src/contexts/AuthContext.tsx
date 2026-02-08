@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@/lib/supabase'
 import { useToast } from '@/hooks/use-toast'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { supabase } from '@/lib/supabase'
+import type { Session, User } from '@supabase/supabase-js'
+import { createContext, useContext, useEffect, useState } from 'react'
 
 interface AuthContextType {
   user: User | null
@@ -26,14 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // First, try to get the current session and handle any potential errors
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    }).catch(error => {
-      console.error("Error getting auth session:", error)
-      setLoading(false) // Always stop loading, even if there's an error
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
+      .catch((error) => {
+        ErrorLogger.log('Error getting auth session:', error)
+        setLoading(false) // Always stop loading, even if there's an error
+      })
 
     // Then, set up the auth state change listener
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {

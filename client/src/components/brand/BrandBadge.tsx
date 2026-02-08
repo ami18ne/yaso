@@ -42,18 +42,22 @@ export default function BrandBadge({
     >
       {pulse && (
         <span className="relative flex h-2 w-2">
-          <span className={cn(
-            'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75',
-            variant === 'success' && 'bg-emerald-400',
-            variant === 'primary' && 'bg-purple-400',
-            variant === 'error' && 'bg-red-400',
-          )} />
-          <span className={cn(
-            'relative inline-flex rounded-full h-2 w-2',
-            variant === 'success' && 'bg-emerald-500',
-            variant === 'primary' && 'bg-purple-500',
-            variant === 'error' && 'bg-red-500',
-          )} />
+          <span
+            className={cn(
+              'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75',
+              variant === 'success' && 'bg-emerald-400',
+              variant === 'primary' && 'bg-purple-400',
+              variant === 'error' && 'bg-red-400'
+            )}
+          />
+          <span
+            className={cn(
+              'relative inline-flex rounded-full h-2 w-2',
+              variant === 'success' && 'bg-emerald-500',
+              variant === 'primary' && 'bg-purple-500',
+              variant === 'error' && 'bg-red-500'
+            )}
+          />
         </span>
       )}
       {children}

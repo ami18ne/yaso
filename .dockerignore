@@ -1,0 +1,32 @@
+# Build artifacts and environment files
+/dist
+.env
+.env.*
+!/.env.production
+
+# Git and version control
+.git
+.gitignore
+
+# Node.js dependencies
+/node_modules
+/client/node_modules
+npm-debug.log
+yarn-error.log
+
+# Editor and IDE configuration
+.vscode/
+.idea/
+.idx/
+*.code-workspace
+
+# Test and temporary files
+/coverage
+/e2e-snapshots
+playwright-report/
+playwright/.cache/
+*.tsbuildinfo
+
+# Operating system files
+.DS_Store
+Thumbs.db

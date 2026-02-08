@@ -47,7 +47,7 @@ export default function BrandAvatar({
   className,
 }: BrandAvatarProps) {
   const initials = fallback?.slice(0, 2).toUpperCase() || '?'
-  
+
   return (
     <div className={cn('relative inline-flex', className)}>
       <div
@@ -58,16 +58,12 @@ export default function BrandAvatar({
         )}
       >
         {src ? (
-          <img
-            src={src}
-            alt={alt}
-            className="w-full h-full object-cover"
-          />
+          <img src={src} alt={alt} className="w-full h-full object-cover" />
         ) : (
           <span>{initials}</span>
         )}
       </div>
-      
+
       {status && (
         <span
           className={cn(
@@ -78,7 +74,7 @@ export default function BrandAvatar({
           )}
         />
       )}
-      
+
       {verified && (
         <span
           className={cn(
@@ -88,7 +84,7 @@ export default function BrandAvatar({
             size === 'md' && 'w-4 h-4',
             size === 'lg' && 'w-5 h-5',
             size === 'xl' && 'w-6 h-6',
-            size === '2xl' && 'w-7 h-7',
+            size === '2xl' && 'w-7 h-7'
           )}
         >
           <svg viewBox="0 0 24 24" fill="none" className="w-full h-full text-white">

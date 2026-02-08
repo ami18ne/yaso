@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import Logo from './Logo'
 
 interface SplashScreenProps {
@@ -7,21 +7,18 @@ interface SplashScreenProps {
   duration?: number
 }
 
-export default function SplashScreen({ 
-  onComplete, 
-  duration = 2500 
-}: SplashScreenProps) {
+export default function SplashScreen({ onComplete, duration = 2500 }: SplashScreenProps) {
   const [isVisible, setIsVisible] = useState(true)
-  
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsVisible(false)
       setTimeout(() => onComplete?.(), 500)
     }, duration)
-    
+
     return () => clearTimeout(timer)
   }, [duration, onComplete])
-  
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -39,7 +36,7 @@ export default function SplashScreen({
               }}
               transition={{
                 duration: 3,
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 ease: 'easeInOut',
               }}
               className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl"
@@ -51,13 +48,13 @@ export default function SplashScreen({
               }}
               transition={{
                 duration: 4,
-                repeat: Infinity,
+                repeat: Number.POSITIVE_INFINITY,
                 ease: 'easeInOut',
               }}
               className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500/20 rounded-full blur-3xl"
             />
           </div>
-          
+
           <div className="relative flex flex-col items-center gap-8">
             <motion.div
               initial={{ scale: 0, rotate: -180 }}
@@ -71,7 +68,7 @@ export default function SplashScreen({
             >
               <Logo size="xl" variant="icon" />
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -90,7 +87,7 @@ export default function SplashScreen({
                 Your space to be you.
               </motion.p>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -99,17 +96,17 @@ export default function SplashScreen({
             >
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0 }}
+                transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, delay: 0 }}
                 className="w-2 h-2 rounded-full bg-purple-500"
               />
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0.2 }}
+                transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, delay: 0.2 }}
                 className="w-2 h-2 rounded-full bg-violet-500"
               />
               <motion.div
                 animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.6, repeat: Infinity, delay: 0.4 }}
+                transition={{ duration: 0.6, repeat: Number.POSITIVE_INFINITY, delay: 0.4 }}
                 className="w-2 h-2 rounded-full bg-fuchsia-500"
               />
             </motion.div>

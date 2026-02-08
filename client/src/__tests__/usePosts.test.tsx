@@ -1,6 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { act, renderHook } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('@/lib/supabase', () => {
   return {
@@ -24,9 +24,7 @@ vi.mock('@/contexts/AuthContext', () => ({
 
 const createQueryWrapper = () => {
   const qc = new QueryClient()
-  return ({ children }: any) => (
-    <QueryClientProvider client={qc}>{children}</QueryClientProvider>
-  )
+  return ({ children }: { children: React.ReactNode }) => <QueryClientProvider client={qc}>{children}</QueryClientProvider>
 }
 
 describe('useUpdatePost', () => {
@@ -35,9 +33,9 @@ describe('useUpdatePost', () => {
     const { result } = renderHook(() => useUpdatePost(), { wrapper })
 
     await act(async () => {
-      const res = await result.current.mutateAsync({ postId: '1', content: 'updated' })
+      const res: { id: string; content: string; } = await result.current.mutateAsync({ postId: '1', content: 'updated' })
       expect(res).toBeDefined()
-      expect((res as any).content || 'updated').toBe('updated')
+      expect(res.content).toBe('updated')
     })
   })
 })

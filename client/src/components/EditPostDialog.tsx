@@ -1,19 +1,19 @@
-import { useState, useRef } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { X } from 'lucide-react'
-import { useUpdatePost } from '@/hooks/usePosts'
-import { useToast } from '@/hooks/use-toast'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useToast } from '@/hooks/use-toast'
+import { useUpdatePost } from '@/hooks/usePosts'
 import { logger } from '@/lib/logger'
+import { X } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 interface EditPostDialogProps {
   open: boolean
@@ -25,7 +25,14 @@ interface EditPostDialogProps {
   onSaveOverride?: (postId: string, content?: string, image_url?: string | null) => Promise<void>
 }
 
-export default function EditPostDialog({ open, onOpenChange, postId, initialContent = '', initialImage = null, onSaveOverride }: EditPostDialogProps) {
+export default function EditPostDialog({
+  open,
+  onOpenChange,
+  postId,
+  initialContent = '',
+  initialImage = null,
+  onSaveOverride,
+}: EditPostDialogProps) {
   const [content, setContent] = useState(initialContent)
   const [imageUrl, setImageUrl] = useState<string | null>(initialImage)
   const [isUploading, setIsUploading] = useState(false)
@@ -68,33 +75,68 @@ export default function EditPostDialog({ open, onOpenChange, postId, initialCont
       <DialogContent className="w-screen max-w-md sm:w-auto sm:rounded-lg border-primary/30 neon-glow p-0 sm:max-w-md max-h-[90vh] flex flex-col overflow-hidden">
         <DialogHeader className="p-4 border-b border-border/20 relative">
           <DialogTitle className="neon-text">{isRTL ? 'تعديل المنشور' : 'Edit Post'}</DialogTitle>
-          <DialogDescription className="text-xs mt-1">{isRTL ? 'قم بتحديث المحتوى أو الصورة' : 'Update the content or image of your post'}</DialogDescription>
-          <button aria-label={isRTL ? 'إغلاق' : 'Close'} className="absolute top-3 right-3 p-1 rounded hover-elevate" onClick={() => onOpenChange(false)}>
+          <DialogDescription className="text-xs mt-1">
+            {isRTL ? 'قم بتحديث المحتوى أو الصورة' : 'Update the content or image of your post'}
+          </DialogDescription>
+          <button
+            aria-label={isRTL ? 'إغلاق' : 'Close'}
+            className="absolute top-3 right-3 p-1 rounded hover-elevate"
+            onClick={() => onOpenChange(false)}
+          >
             <X className="h-4 w-4" />
           </button>
         </DialogHeader>
 
         <div className="p-4 space-y-3 overflow-auto">
-          <Textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder={isRTL ? 'اكتب شيئاً رائعاً...' : 'Write something amazing...'} />
+          <Textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder={isRTL ? 'اكتب شيئاً رائعاً...' : 'Write something amazing...'}
+          />
 
           {imageUrl ? (
             <div className="relative rounded-lg overflow-hidden">
-              <button onClick={handleRemoveImage} className="absolute top-2 right-2 bg-black/60 rounded-full p-1 hover-elevate">
+              <button
+                onClick={handleRemoveImage}
+                className="absolute top-2 right-2 bg-black/60 rounded-full p-1 hover-elevate"
+              >
                 <X className="h-4 w-4 text-white" />
               </button>
-              <img loading="eager" src={imageUrl} alt="preview" className="w-full h-48 object-cover" />
+              <img
+                loading="eager"
+                src={imageUrl}
+                alt="preview"
+                className="w-full h-48 object-cover"
+              />
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              <Input ref={fileRef as any} type="file" accept="image/*" onChange={handleFileChange} />
+              <Input
+                ref={fileRef as any}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+              />
             </div>
           )}
 
           <div className="flex gap-2">
-            <Button onClick={handleSave} className="flex-1" disabled={isUploading || updatePost.isPending}>
-              {updatePost.isPending || isUploading ? (isRTL ? 'جاري الحفظ...' : 'Saving...') : (isRTL ? 'حفظ' : 'Save')}
+            <Button
+              onClick={handleSave}
+              className="flex-1"
+              disabled={isUploading || updatePost.isPending}
+            >
+              {updatePost.isPending || isUploading
+                ? isRTL
+                  ? 'جاري الحفظ...'
+                  : 'Saving...'
+                : isRTL
+                  ? 'حفظ'
+                  : 'Save'}
             </Button>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>{isRTL ? 'إلغاء' : 'Cancel'}</Button>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              {isRTL ? 'إلغاء' : 'Cancel'}
+            </Button>
           </div>
         </div>
       </DialogContent>

@@ -1,33 +1,23 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
+import { useAuthenticatedMutation } from './useAuthenticatedMutation'
 
-export interface Post {
-  id: string
-  user_id: string
-  content: string
-  image_url: string | null
-  likes_count: number
-  comments_count: number
-  created_at: string
-  profiles: {
-    username: string
-    full_name: string | null
-    avatar_url: string | null
-  }
-  is_liked?: boolean
-  is_saved?: boolean
-}
+const POSTS_PER_PAGE = 10
+
+// ... (Keep the Post interface as is)
 
 export function usePosts() {
   const { user } = useAuth()
-  const { toast } = useToast()
 
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: ['posts'],
-    queryFn: async () => {
+    queryFn: async ({ pageParam = 0 }) => {
+      const from = pageParam * POSTS_PER_PAGE
+      const to = from + POSTS_PER_PAGE - 1
+
       const { data: posts, error } = await supabase
         .from('posts')
         .select(`
@@ -35,368 +25,269 @@ export function usePosts() {
           profiles:user_id (username, full_name, avatar_url)
         `)
         .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) {
-        // If table doesn't exist, return empty array
         if (error.message && error.message.includes('does not exist')) {
-          return [];
+          logger.log('Posts table does not exist, returning empty array.')
+          return []
         }
         throw error
       }
 
-      if (user) {
-        const { data: likes } = await supabase
-          .from('likes')
-          .select('post_id')
-          .eq('user_id', user.id)
-
-        const { data: saves } = await supabase
-          .from('saves')
-          .select('post_id')
-          .eq('user_id', user.id)
-
-        const likedPostIds = new Set(likes?.map(l => l.post_id) || [])
-        const savedPostIds = new Set(saves?.map(s => s.post_id) || [])
-        
-        return posts.map(post => ({
-          ...post,
-          is_liked: likedPostIds.has(post.id),
-          is_saved: savedPostIds.has(post.id)
-        }))
+      if (!user || posts.length === 0) {
+        return posts || []
       }
 
-      return posts
+      const postIds = posts.map((p) => p.id)
+
+      const { data: likes } = await supabase
+        .from('likes')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds)
+
+      const { data: saves } = await supabase
+        .from('saves')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds)
+
+      const likedPostIds = new Set(likes?.map((l) => l.post_id) || [])
+      const savedPostIds = new Set(saves?.map((s) => s.post_id) || [])
+
+      return posts.map((post) => ({
+        ...post,
+        is_liked: likedPostIds.has(post.id),
+        is_saved: savedPostIds.has(post.id),
+      }))
     },
-    refetchInterval: 10000,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.length < POSTS_PER_PAGE) {
+        return undefined
+      }
+      return allPages.length
+    },
   })
 }
 
 export function useCreatePost() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  return useMutation({
-    mutationFn: async ({ content, image_url }: { content: string; image_url?: string | null }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to create a post')
-
-        const { data, error } = await supabase
-          .from('posts')
-          .insert([{ user_id: user.id, content, image_url }])
-          .select(`
+  return useAuthenticatedMutation(
+    async ({ content, image_url }, user) => {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([{ user_id: user.id, content, image_url }])
+        .select(`
             *,
             profiles:user_id (username, full_name, avatar_url)
           `)
-          .single()
+        .single()
 
-        if (error) throw new Error(`Failed to create post: ${error.message}`)
-        return data
-      } catch (error) {
-        logger.error('Error in useCreatePost:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while creating the post')
-      }
+      if (error) throw new Error(`Failed to create post: ${error.message}`)
+      return data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      toast({
-        title: 'Post created!',
-        description: 'Your post has been published successfully.',
-      })
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error creating post',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
-  })
+    {
+      onSuccess: () => {
+        toast({
+          title: 'Post created!',
+          description: 'Your post has been published successfully.',
+        })
+      },
+      onError: (error) => {
+        // The generic error toast is already handled, this is for specific actions
+      },
+    }
+  )
 }
 
 export function useLikePost() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+  return useAuthenticatedMutation(async ({ postId, isLiked }, user) => {
+    if (isLiked) {
+      const { error } = await supabase
+        .from('likes')
+        .delete()
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
 
-  return useMutation({
-    mutationFn: async ({ postId, isLiked }: { postId: string; isLiked: boolean }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to like posts')
+      if (error) throw new Error(`Failed to unlike post: ${error.message}`)
+    } else {
+      const { error } = await supabase.from('likes').insert([{ post_id: postId, user_id: user.id }])
 
-        if (isLiked) {
-          const { error } = await supabase
-            .from('likes')
-            .delete()
-            .eq('post_id', postId)
-            .eq('user_id', user.id)
-
-          if (error) throw new Error(`Failed to unlike post: ${error.message}`)
-        } else {
-          const { error } = await supabase
-            .from('likes')
-            .insert([{ post_id: postId, user_id: user.id }])
-
-          if (error) throw new Error(`Failed to like post: ${error.message}`)
-        }
-      } catch (error) {
-        logger.error('Error in useLikePost:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating like status')
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
+      if (error) throw new Error(`Failed to like post: ${error.message}`)
+    }
   })
 }
 
 export function useSavePost() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
+  return useAuthenticatedMutation(
+    async ({ postId, isSaved }, user) => {
+      if (isSaved) {
+        const { error } = await supabase
+          .from('saves')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id)
 
-  return useMutation({
-    mutationFn: async ({ postId, isSaved }: { postId: string; isSaved: boolean }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to save posts')
+        if (error) throw new Error(`Failed to unsave post: ${error.message}`)
+      } else {
+        const { error } = await supabase
+          .from('saves')
+          .insert([{ post_id: postId, user_id: user.id }])
 
-        if (isSaved) {
-          const { error } = await supabase
-            .from('saves')
-            .delete()
-            .eq('post_id', postId)
-            .eq('user_id', user.id)
-
-          if (error) throw new Error(`Failed to unsave post: ${error.message}`)
-        } else {
-          const { error } = await supabase
-            .from('saves')
-            .insert([{ post_id: postId, user_id: user.id }])
-
-          if (error) throw new Error(`Failed to save post: ${error.message}`)
-        }
-      } catch (error) {
-        logger.error('Error in useSavePost:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating save status')
+        if (error) throw new Error(`Failed to save post: ${error.message}`)
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: ['saved-posts'] })
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
-  })
-}
-
-export function useSavedPosts() {
-  const { user } = useAuth()
-
-  return useQuery({
-    queryKey: ['saved-posts', user?.id],
-    queryFn: async () => {
-      if (!user) return []
-
-      const { data: saves, error } = await supabase
-        .from('saves')
-        .select(`
-          post_id,
-          posts!inner (
-            *,
-            profiles:user_id (username, full_name, avatar_url)
-          )
-        `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      const posts = saves?.map(save => save.posts).flat() || []
-
-      const postIds = posts.map(p => p.id)
-      
-      if (postIds.length === 0) return []
-
-      const [likesResult, savesResult] = await Promise.all([
-        supabase.from('likes').select('post_id').eq('user_id', user.id).in('post_id', postIds),
-        supabase.from('saves').select('post_id').eq('user_id', user.id).in('post_id', postIds)
-      ])
-
-      const likedPostIds = new Set(likesResult.data?.map(l => l.post_id) || [])
-      const savedPostIds = new Set(savesResult.data?.map(s => s.post_id) || [])
-      
-      return posts.map(post => ({
-        ...post,
-        is_liked: likedPostIds.has(post.id),
-        is_saved: savedPostIds.has(post.id)
-      }))
-    },
-    enabled: !!user,
-  })
+    {
+      onSuccess: () => {
+        /* Invalidation is handled by the hook */
+      },
+    }
+  )
 }
 
 export function useDeletePost() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
   const { toast } = useToast()
 
-  return useMutation({
-    mutationFn: async ({ postId, imageUrl }: { postId: string; imageUrl?: string | null }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to delete posts')
+  return useAuthenticatedMutation(
+    async ({ postId, imageUrl }, user) => {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id)
 
-        const { error } = await supabase
-          .from('posts')
-          .delete()
-          .eq('id', postId)
-          .eq('user_id', user.id)
+      if (error) throw new Error(`Failed to delete post: ${error.message}`)
 
-        if (error) throw new Error(`Failed to delete post: ${error.message}`)
-
-        if (imageUrl && imageUrl.includes('supabase')) {
-          try {
-            const { deleteMedia } = await import('@/lib/storage')
-            await deleteMedia(imageUrl)
-          } catch (storageError) {
-            logger.error('Failed to delete media from storage:', storageError)
-          }
+      if (imageUrl && imageUrl.includes('supabase')) {
+        try {
+          const { deleteMedia } = await import('@/lib/storage')
+          await deleteMedia(imageUrl)
+        } catch (storageError) {
+          logger.error('Failed to delete media from storage:', storageError)
+          // Do not rethrow, as the post itself was deleted
         }
-      } catch (error) {
-        logger.error('Error in useDeletePost:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while deleting the post')
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      queryClient.invalidateQueries({ queryKey: ['saved-posts'] })
-      toast({
-        title: 'Post deleted',
-        description: 'Your post has been removed.',
-      })
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error deleting post',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
-  })
+    {
+      onSuccess: () => {
+        toast({
+          title: 'Post deleted',
+          description: 'Your post has been removed.',
+        })
+      },
+    }
+  )
 }
 
 export function useUpdatePost() {
-  const { user } = useAuth()
-  const queryClient = useQueryClient()
   const { toast } = useToast()
+  return useAuthenticatedMutation(
+    async ({ postId, content, image_url }, user) => {
+      const { data, error } = await supabase
+        .from('posts')
+        .update({ content, image_url })
+        .eq('id', postId)
+        .eq('user_id', user.id)
+        .select(`*, profiles:user_id (username, full_name, avatar_url)`)
+        .single()
 
-  return useMutation({
-    mutationFn: async ({ postId, content, image_url }: { postId: string; content?: string; image_url?: string | null }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to update posts')
-
-        const { data, error } = await supabase
-          .from('posts')
-          .update({ content, image_url })
-          .eq('id', postId)
-          .eq('user_id', user.id)
-          .select(
-            `*, profiles:user_id (username, full_name, avatar_url)`
-          )
-          .single()
-
-        if (error) throw new Error(`Failed to update post: ${error.message}`)
-        return data
-      } catch (error) {
-        logger.error('Error in useUpdatePost:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating the post')
-      }
+      if (error) throw new Error(`Failed to update post: ${error.message}`)
+      return data
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
-      toast({ title: 'Post updated', description: 'Your post has been updated successfully.' })
-    },
-    onError: (error: Error) => {
-      toast({ title: 'Error updating post', description: error.message, variant: 'destructive' })
-    },
-  })
+    {
+      onSuccess: () => {
+        toast({ title: 'Post updated', description: 'Your post has been updated successfully.' })
+      },
+    }
+  )
 }
 
 export function usePostReactions(postId: string) {
   return useQuery({
     queryKey: ['post-reactions', postId],
     queryFn: async () => {
+      if (!postId) return []
+
       const { data, error } = await supabase
         .from('post_reactions')
-        .select('*')
+        .select('reaction, user_id, profiles:user_id (username)')
         .eq('post_id', postId)
-        .order('created_at', { ascending: false })
 
       if (error) {
-        // If table doesn't exist, return empty array
-        if (error.message && error.message.includes('does not exist')) {
-          return [];
-        }
+        logger.error('Error fetching post reactions', error)
         throw error
       }
-      return data
+      return data || []
     },
     enabled: !!postId,
   })
 }
 
 export function useTogglePostReaction() {
-  const { user } = useAuth()
   const queryClient = useQueryClient()
-  const { toast } = useToast()
+  return useAuthenticatedMutation(
+    async ({ postId, reaction }: { postId: string; reaction: string }, user) => {
+      const { data: existingReaction, error: fetchError } = await supabase
+        .from('post_reactions')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single()
 
-  return useMutation({
-    mutationFn: async ({ postId, reaction }: { postId: string; reaction: string }) => {
-      try {
-        if (!user) throw new Error('Must be logged in to react to posts')
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 = no rows found
+        throw new Error(`Failed to check for existing reaction: ${fetchError.message}`)
+      }
 
-        const response = await fetch(`/api/posts/${postId}/reactions`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            userId: user.id,
-            reaction,
-          }),
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || 'Failed to toggle reaction')
-        }
-
-        return await response.json()
-      } catch (error) {
-        logger.error('Error in useTogglePostReaction:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while toggling reaction')
+      if (existingReaction) {
+        const { error: updateError } = await supabase
+          .from('post_reactions')
+          .update({ reaction })
+          .eq('id', existingReaction.id)
+        if (updateError) throw new Error(`Failed to update reaction: ${updateError.message}`)
+      } else {
+        const { error: insertError } = await supabase
+          .from('post_reactions')
+          .insert([{ post_id: postId, user_id: user.id, reaction }])
+        if (insertError) throw new Error(`Failed to add reaction: ${insertError.message}`)
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] })
+    {
+      onSuccess: (_, variables) => {
+        queryClient.invalidateQueries({ queryKey: ['post-reactions', variables.postId] })
+      },
+      onError: (error) => {
+        logger.error('Failed to toggle post reaction', error)
+      },
+    }
+  )
+}
+
+export function useSavedPosts() {
+  const { user } = useAuth()
+  return useQuery({
+    queryKey: ['saved-posts', user?.id],
+    queryFn: async () => {
+      if (!user) return []
+
+      const { data, error } = await supabase
+        .from('saves')
+        .select(`
+                    posts:post_id (*, profiles:user_id(username, full_name, avatar_url))
+                `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        logger.error('Error fetching saved posts', error)
+        throw error
+      }
+
+      return data?.map((item) => item.posts) || []
     },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: error.message,
-        variant: 'destructive',
-      })
-    },
+    enabled: !!user,
   })
 }

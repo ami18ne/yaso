@@ -1,4 +1,5 @@
 import React from 'react'
+import { ErrorLogger } from '../lib/errorHandler'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -20,9 +21,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   }
 
   componentDidCatch(error: any, errorInfo: any) {
-    // يمكنك إرسال الخطأ إلى خدمة تتبع الأخطاء هنا
-    // eslint-disable-next-line no-console
-    console.error('ErrorBoundary caught:', error, errorInfo)
+    ErrorLogger.log(error, 'ErrorBoundary')
   }
 
   render() {

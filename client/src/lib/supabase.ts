@@ -1,11 +1,11 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import { type SupabaseClient, createClient } from '@supabase/supabase-js'
 import { logger } from './logger'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-let supabaseClient: SupabaseClient | null = null;
-let isConfigured = false;
+let supabaseClient: SupabaseClient | null = null
+let isConfigured = false
 
 function initializeSupabase(): SupabaseClient | null {
   const missingVars: string[] = []
@@ -21,7 +21,7 @@ function initializeSupabase(): SupabaseClient | null {
   if (missingVars.length > 0) {
     logger.warn(
       `Missing Supabase environment variables: ${missingVars.join(', ')}. ` +
-      'Please add them to enable full functionality.'
+        'Please add them to enable full functionality.'
     )
     return null
   }
@@ -52,12 +52,12 @@ export async function checkSupabaseConnection(): Promise<boolean> {
   if (!supabaseClient) {
     return false
   }
-  
+
   try {
     const { error } = await supabaseClient
       .from('profiles')
       .select('*', { count: 'exact', head: true })
-    
+
     if (error) {
       logger.error('Supabase connection check failed:', error)
       return false

@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
 
 export interface Video {
   id: string
@@ -45,11 +45,11 @@ export function useVideos() {
           .select('video_id')
           .eq('user_id', user.id)
 
-        const likedVideoIds = new Set(likes?.map(l => l.video_id) || [])
-        
-        return videos.map(video => ({
+        const likedVideoIds = new Set(likes?.map((l) => l.video_id) || [])
+
+        return videos.map((video) => ({
           ...video,
-          is_liked: likedVideoIds.has(video.id)
+          is_liked: likedVideoIds.has(video.id),
         }))
       }
 
@@ -86,7 +86,9 @@ export function useLikeVideo() {
         }
       } catch (error) {
         logger.error('Error in useLikeVideo:', error)
-        throw error instanceof Error ? error : new Error('An unexpected error occurred while updating video like status')
+        throw error instanceof Error
+          ? error
+          : new Error('An unexpected error occurred while updating video like status')
       }
     },
     onSuccess: () => {

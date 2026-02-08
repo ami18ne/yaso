@@ -1,8 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import { useToast } from './use-toast'
+import { ErrorLogger } from '@/lib/errorHandler'
 import { logger } from '@/lib/logger'
+import { supabase } from '@/lib/supabase'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToast } from './use-toast'
 
 export function useCommunities() {
   const { user } = useAuth()
@@ -23,7 +24,7 @@ export function useCommunities() {
         if (!res.ok) throw new Error('Failed to fetch user communities')
         return res.json()
       } catch (error: any) {
-        console.error('Error in useCommunities:', error)
+        ErrorLogger.log('Error in useCommunities:', error)
         throw new Error(error?.message || 'Failed to fetch communities')
       }
     },
@@ -56,7 +57,11 @@ export function useCreateCommunity() {
   const { user } = useAuth()
 
   return useMutation({
-    mutationFn: async ({ name, description, visibility }: { name: string; description?: string; visibility?: string }) => {
+    mutationFn: async ({
+      name,
+      description,
+      visibility,
+    }: { name: string; description?: string; visibility?: string }) => {
       if (!user) throw new Error('Must be logged in to create a community')
       const res = await fetch('/api/communities', {
         method: 'POST',
@@ -74,19 +79,19 @@ export function useCreateCommunity() {
       setTimeout(() => {
         queryClient.refetchQueries({ queryKey: ['communities'] })
       }, 100)
-      toast({ 
-        title: 'Community created!', 
-        description: `"${data.name}" was created successfully.` 
+      toast({
+        title: 'Community created!',
+        description: `"${data.name}" was created successfully.`,
       })
     },
     onError: (error: any) => {
-      console.error('Create community error:', error)
-      toast({ 
-        title: 'Error', 
-        description: error.message || 'Failed to create community', 
-        variant: 'destructive' 
+      ErrorLogger.log('Create community error:', error)
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to create community',
+        variant: 'destructive',
       })
-    }
+    },
   })
 }
 
@@ -113,33 +118,33 @@ export function useJoinCommunity() {
 }
 
 export function useLeaveCommunity() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const { user } = useAuth();
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+  const { user } = useAuth()
 
   return useMutation({
     mutationFn: async ({ communityId }: { communityId: string }) => {
-      if (!user) throw new Error("Must be logged in to leave communities");
+      if (!user) throw new Error('Must be logged in to leave communities')
       const res = await fetch(`/api/communities/${communityId}/leave`, {
-        method: "DELETE",
-      });
+        method: 'DELETE',
+      })
       if (!res.ok) {
-        throw new Error("Failed to leave community");
+        throw new Error('Failed to leave community')
       }
-      return res.json();
+      return res.json()
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communities"] });
-      toast({ title: "Left community", description: "You have left the community." });
+      queryClient.invalidateQueries({ queryKey: ['communities'] })
+      toast({ title: 'Left community', description: 'You have left the community.' })
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to leave community",
-        variant: "destructive",
-      });
+        title: 'Error',
+        description: error.message || 'Failed to leave community',
+        variant: 'destructive',
+      })
     },
-  });
+  })
 }
 
 export function useChannelsForCommunity(communityId?: string) {
@@ -159,7 +164,11 @@ export function useCreateChannel(communityId?: string) {
   const queryClient = useQueryClient()
   const { toast } = useToast()
   return useMutation({
-    mutationFn: async ({ name, type, isPrivate }: { name: string; type?: string; isPrivate?: boolean }) => {
+    mutationFn: async ({
+      name,
+      type,
+      isPrivate,
+    }: { name: string; type?: string; isPrivate?: boolean }) => {
       if (!communityId) throw new Error('Missing community id')
       const res = await fetch(`/api/communities/${communityId}/channels`, {
         method: 'POST',
@@ -193,7 +202,11 @@ export function useChannelMessages(channelId?: string) {
 export function useSendChannelMessage() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ channelId, senderId, content }: { channelId: string; senderId: string; content: string }) => {
+    mutationFn: async ({
+      channelId,
+      senderId,
+      content,
+    }: { channelId: string; senderId: string; content: string }) => {
       const res = await fetch('/api/channel/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,7 +217,7 @@ export function useSendChannelMessage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['channel-messages'] })
-    }
+    },
   })
 }
 

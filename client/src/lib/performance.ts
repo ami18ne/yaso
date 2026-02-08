@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, useCallback } from 'react'
+import { ErrorLogger } from '@/lib/errorHandler'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 export function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value)
@@ -22,16 +23,19 @@ export function useThrottle<T>(value: T, interval: number): T {
 
   useEffect(() => {
     const now = Date.now()
-    
+
     if (now >= lastUpdated.current + interval) {
       lastUpdated.current = now
       setThrottledValue(value)
     } else {
-      const id = setTimeout(() => {
-        lastUpdated.current = Date.now()
-        setThrottledValue(value)
-      }, interval - (now - lastUpdated.current))
-      
+      const id = setTimeout(
+        () => {
+          lastUpdated.current = Date.now()
+          setThrottledValue(value)
+        },
+        interval - (now - lastUpdated.current)
+      )
+
       return () => clearTimeout(id)
     }
   }, [value, interval])
@@ -80,7 +84,7 @@ export function useInfiniteScroll(
       if (!container) return
 
       const { scrollTop, scrollHeight, clientHeight } = container
-      
+
       if (scrollHeight - scrollTop - clientHeight < threshold) {
         callback()
       }
@@ -114,7 +118,7 @@ export function useImagePreload(src: string | undefined) {
 
 export function preloadImages(urls: string[]): Promise<void[]> {
   return Promise.all(
-    urls.map(url => {
+    urls.map((url) => {
       return new Promise<void>((resolve) => {
         const img = new Image()
         img.onload = () => resolve()
@@ -135,37 +139,40 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
     }
   })
 
-  const setValue = useCallback((value: T | ((val: T) => T)) => {
-    try {
-      const valueToStore = value instanceof Function ? value(storedValue) : value
-      setStoredValue(valueToStore)
-      window.localStorage.setItem(key, JSON.stringify(valueToStore))
-    } catch (error) {
-      console.error('Error saving to localStorage:', error)
-    }
-  }, [key, storedValue])
+  const setValue = useCallback(
+    (value: T | ((val: T) => T)) => {
+      try {
+        const valueToStore = value instanceof Function ? value(storedValue) : value
+        setStoredValue(valueToStore)
+        window.localStorage.setItem(key, JSON.stringify(valueToStore))
+      } catch (error) {
+        ErrorLogger.log('Error saving to localStorage:', error)
+      }
+    },
+    [key, storedValue]
+  )
 
   return [storedValue, setValue] as const
 }
 
 export function memoize<T extends (...args: any[]) => any>(fn: T): T {
   const cache = new Map<string, ReturnType<T>>()
-  
+
   return ((...args: Parameters<T>): ReturnType<T> => {
     const key = JSON.stringify(args)
-    
+
     if (cache.has(key)) {
       return cache.get(key)!
     }
-    
+
     const result = fn(...args)
     cache.set(key, result)
-    
+
     if (cache.size > 100) {
       const firstKey = cache.keys().next().value
       if (firstKey) cache.delete(firstKey)
     }
-    
+
     return result
   }) as T
 }
@@ -190,11 +197,11 @@ export function formatTimeAgo(date: Date | string): string {
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d`
   if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 604800)}w`
-  
+
   return past.toLocaleDateString()
 }
 
-export const requestIdleCallback = 
+export const requestIdleCallback =
   typeof window !== 'undefined' && 'requestIdleCallback' in window
     ? window.requestIdleCallback
     : (cb: () => void) => setTimeout(cb, 1)
