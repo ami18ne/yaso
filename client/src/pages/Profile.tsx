@@ -50,13 +50,15 @@ export default function Profile() {
 
   const profile = username ? profileByUsername : currentUserProfile
   const profileLoading = username ? loadingByUsername : loadingCurrentUser
-  const { data: allPosts } = usePosts()
+  const { data: allPostsData } = usePosts()
   const { data: savedPosts = [] } = useSavedPosts()
   const { data: isFollowing = false } = useIsFollowing(profile?.id || '')
   const followMutation = useFollowUser()
 
   const isOwnProfile = !username || user?.id === profile?.id
 
+  // Flatten pages array from infinite query
+  const allPosts = allPostsData?.pages ? allPostsData.pages.flat() : []
   const userPosts = allPosts?.filter((post) => post.user_id === profile?.id) || []
   const { data: allVideos } = useVideos()
   const userVideos = allVideos?.filter((video) => video.user_id === profile?.id) || []

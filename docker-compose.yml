@@ -1,23 +1,50 @@
 version: '3.8'
+
 services:
-  server:
-    build: .
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: yaso-app
     ports:
       - "4000:4000"
     environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/buzly
-      - NODE_ENV=production
-    depends_on:
-      - db
+      NODE_ENV: production
+      PORT: 4000
+      LOG_LEVEL: info
+      # Supabase Configuration (from .env.production)
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+      SUPABASE_SERVICE_KEY: ${SUPABASE_SERVICE_KEY}
+      # Agora Configuration
+      VITE_AGORA_APP_ID: ${VITE_AGORA_APP_ID}
+      # Session & Security
+      SESSION_SECRET: ${SESSION_SECRET}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:4000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - yaso-network
 
-  db:
-    image: postgres:13
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=buzly
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
+  # Optional: Postgres for local development only
+  # db:
+  #   image: postgres:15-alpine
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER:-dev}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpass}
+  #     POSTGRES_DB: ${POSTGRES_DB:-yaso}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - yaso-network
 
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:
+
+networks:
+  yaso-network:
+    driver: bridge

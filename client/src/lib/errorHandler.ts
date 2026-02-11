@@ -67,8 +67,9 @@ export class NetworkError extends AppError {
  * Error logger with optional remote reporting
  */
 export class ErrorLogger {
-  private static isDev = process.env.NODE_ENV === 'development'
-  private static remoteEndpoint = process.env.VITE_ERROR_LOG_ENDPOINT
+  // Use Vite's env helpers in the client
+  private static isDev = typeof import.meta !== 'undefined' && !!(import.meta as any).env?.DEV
+  private static remoteEndpoint = typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_ERROR_LOG_ENDPOINT : undefined
 
   static log(error: unknown, context?: string) {
     const appError = this.normalizeError(error)

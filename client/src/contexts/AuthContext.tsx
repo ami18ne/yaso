@@ -26,6 +26,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { toast } = useToast()
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!supabase) {
+      ErrorLogger.log('Supabase is not configured - auth features will be limited')
+      setLoading(false)
+      return
+    }
+
     // First, try to get the current session and handle any potential errors
     supabase.auth
       .getSession()
@@ -53,6 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -74,6 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signUp = async (email: string, password: string, username: string) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -102,6 +115,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     const { error } = await supabase.auth.signOut()
 
     if (error) {
@@ -120,6 +136,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -138,6 +157,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const verifyOTP = async (token: string) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     if (!user?.email) {
       throw new Error('No email found')
     }
@@ -164,6 +186,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resendOTP = async () => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     if (!user?.email) {
       throw new Error('No email found')
     }
@@ -189,6 +214,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
+    if (!supabase) {
+      throw new Error('Supabase is not configured')
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     })

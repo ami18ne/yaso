@@ -57,6 +57,10 @@ export function useCreateStory() {
   return useMutation({
     mutationFn: async ({ file, mediaType }: { file: File; mediaType: 'image' | 'video' }) => {
       try {
+        if (!supabase) {
+          throw new Error('Supabase is not configured')
+        }
+
         const {
           data: { user },
         } = await supabase.auth.getUser()

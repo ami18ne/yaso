@@ -1,11 +1,31 @@
 import { type SupabaseClient, createClient } from '@supabase/supabase-js'
 import { logger } from './logger'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+let supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 let supabaseClient: SupabaseClient | null = null
 let isConfigured = false
+let configLoaded = false
+
+async function loadConfigFromServer() {
+  if (configLoaded) return
+  configLoaded = true
+
+  try {
+    const response = await fetch('/api/config')
+    if (response.ok) {
+      const config = await response.json()
+      if (config.supabase?.url && config.supabase?.anonKey) {
+        supabaseUrl = config.supabase.url
+        supabaseAnonKey = config.supabase.anonKey
+        logger.info('✓ Loaded Supabase config from server')
+      }
+    }
+  } catch (error) {
+    logger.warn('Failed to load config from server:', error)
+  }
+}
 
 function initializeSupabase(): SupabaseClient | null {
   const missingVars: string[] = []
@@ -40,12 +60,36 @@ function initializeSupabase(): SupabaseClient | null {
   })
 }
 
+// Try to initialize with environment variables first
 supabaseClient = initializeSupabase()
 
-export const supabase = supabaseClient!
+// If not configured, try to load from server
+if (!supabaseClient) {
+  loadConfigFromServer().then(() => {
+    supabaseClient = initializeSupabase()
+    if (isConfigured && supabaseClient) {
+      logger.info('✓ Supabase configured from server config')
+    }
+  })
+} else {
+  logger.info('✓ Supabase configured and ready')
+}
+
+if (!supabaseClient && !isConfigured) {
+  logger.warn('Supabase is NOT configured. Check your .env file for VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY')
+}
+
+export const supabase = supabaseClient
 
 export function isSupabaseConfigured(): boolean {
   return isConfigured && supabaseClient !== null
+}
+
+export function getSupabase(): SupabaseClient {
+  if (!supabaseClient) {
+    throw new Error('Supabase is not configured. Please check your environment variables.')
+  }
+  return supabaseClient
 }
 
 export async function checkSupabaseConnection(): Promise<boolean> {

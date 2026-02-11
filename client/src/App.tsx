@@ -51,7 +51,7 @@ function Router() {
     '/faq',
     '/about',
   ]
-  if (process.env.NODE_ENV !== 'production') {
+  if (typeof import.meta !== 'undefined' && !(import.meta as any).env?.PROD) {
     publicPaths.push('/__e2e__')
   }
   const isPublicPath = publicPaths.includes(location)

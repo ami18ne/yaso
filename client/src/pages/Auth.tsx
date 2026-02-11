@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { ArrowDown, Loader2 } from 'lucide-react'
 import { type FormEvent, type ReactNode, useEffect, useRef, useState } from 'react'
-import logo from '../../public/tinar_logo.svg'
+// public assets are served from the Vite `public` dir — import using an absolute path
+import logo from '/logo.svg'
 
 // Icons
 const UserIcon = () => (
@@ -398,6 +399,10 @@ const AuthFormSection = () => {
     setSuccess(null)
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase is not configured. Please check your environment variables.')
+      }
+
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({
           email,

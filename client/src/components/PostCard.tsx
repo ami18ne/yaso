@@ -1,9 +1,10 @@
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/hooks/use-toast'
 import { useAddComment, useComments } from '@/hooks/useComments'
-import { useLikePost, usePostReactions, useSavePost, useTogglePostReaction } from '@/hooks/usePosts'
+import { useLikePost, useSavePost } from '@/hooks/usePosts'
 import { ErrorLogger } from '@/lib/errorHandler'
 import { cn } from '@/lib/utils'
+import { motion } from 'framer-motion'
 import { formatDistanceToNow } from 'date-fns'
 import { Bookmark, Heart, MessageCircle, Send } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -14,7 +15,6 @@ import EditPostDialog from './EditPostDialog'
 import ImageLightbox from './ImageLightbox'
 import OptimizedImage from './OptimizedImage'
 import PostOptionsMenu from './PostOptionsMenu'
-import ReactionPicker from './ReactionPicker'
 import ShareDialog from './ShareDialog'
 import UserAvatar from './UserAvatar'
 import VerifiedBadge from './VerifiedBadge'
@@ -47,7 +47,6 @@ export default function PostCard({
   timestamp,
   isLiked = false,
   isSaved = false,
-  reactions = [],
 }: PostCardProps) {
   const [liked, setLiked] = useState(isLiked)
   const [saved, setSaved] = useState(isSaved)
@@ -58,15 +57,12 @@ export default function PostCard({
   const [commentsDialogOpen, setCommentsDialogOpen] = useState(false)
   const [lightboxOpen, setLightboxOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
-  const [reactionPickerOpen, setReactionPickerOpen] = useState(false)
   const likePostMutation = useLikePost()
   const savePostMutation = useSavePost()
-  const toggleReactionMutation = useTogglePostReaction()
   const { user: currentUser } = useAuth()
   const { toast } = useToast()
   const { data: commentsData = [] } = useComments(id)
   const addCommentMutation = useAddComment()
-  const { data: postReactions = [] } = usePostReactions(id)
   const [, setLocation] = useLocation()
 
   useEffect(() => {
@@ -160,34 +156,21 @@ export default function PostCard({
     await addCommentMutation.mutateAsync({ postId: id, content })
   }
 
-  const handleReaction = async (reaction: string) => {
-    if (!currentUser) {
-      toast({
-        title: 'Sign in required',
-        description: 'Please sign in to react to posts',
-        variant: 'destructive',
-      })
-      setLocation('/auth')
-      return
-    }
-
-    try {
-      await toggleReactionMutation.mutateAsync({ postId: id, reaction })
-      toast({
-        title: 'Reaction added!',
-        description: `You reacted with ${reaction}`,
-      })
-    } catch (error) {
-      ErrorLogger.log('Error adding reaction:', error)
-    }
-  }
-
   return (
-    <article className="w-full animate-fade-in py-6" data-testid="post-card">
+    <motion.article
+      className="w-full py-6"
+      data-testid="post-card"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="px-4 py-0 flex items-center justify-between">
-        <button
+        <motion.button
           className="flex items-center gap-3 hover:opacity-80 transition-opacity"
           onClick={() => setLocation(`/profile/${user.username}`)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
         >
           <UserAvatar
             src={user.avatar}
@@ -215,7 +198,7 @@ export default function PostCard({
               })()}
             </p>
           </div>
-        </button>
+        </motion.button>
         <PostOptionsMenu
           postId={id}
           imageUrl={image}
@@ -251,88 +234,84 @@ export default function PostCard({
       <div className="px-4 py-3 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button
+            <motion.button
               onClick={handleLike}
-              className="group transition-transform active:scale-90"
+              className="group transition-transform"
               disabled={isLiking}
               data-testid="button-like-post"
               aria-label={liked ? 'Unlike' : 'Like'}
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <Heart
-                className={cn(
-                  'h-6 w-6 transition-all duration-200',
-                  liked
-                    ? 'text-red-500 fill-red-500 scale-110'
-                    : 'text-foreground group-hover:text-red-500'
-                )}
-              />
-            </button>
-            <button
-              className="group transition-transform active:scale-90 relative"
-              onClick={() => setReactionPickerOpen(true)}
-              aria-label="Add reaction"
+              <motion.div
+                animate={liked ? { scale: [1, 1.3, 1] } : {}}
+                transition={{ duration: 0.3 }}
+              >
+                <Heart
+                  className={cn(
+                    'h-6 w-6 transition-all duration-200',
+                    liked
+                      ? 'text-red-500 fill-red-500'
+                      : 'text-foreground group-hover:text-red-500'
+                  )}
+                />
+              </motion.div>
+            </motion.button>
+            <motion.button
+              className="group transition-transform"
+              onClick={() => setCommentsDialogOpen(true)}
+              data-testid="button-comment-post"
+              aria-label="Comment"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <span className="text-lg group-hover:scale-110 transition-transform">😊</span>
-            </button>
-            <button
-              className="group transition-transform active:scale-90"
+              <MessageCircle className="h-6 w-6 transition-colors group-hover:text-primary" />
+            </motion.button>
+            <motion.button
+              className="group transition-transform"
               onClick={() => setShareDialogOpen(true)}
               data-testid="button-share-post"
               aria-label="Share"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
             >
               <Send className="h-6 w-6 transition-colors group-hover:text-primary" />
-            </button>
+            </motion.button>
           </div>
-          <button
+          <motion.button
             onClick={handleSave}
-            className="group transition-transform active:scale-90"
+            className="group transition-transform"
             disabled={isSaving}
             data-testid="button-save-post"
             aria-label={saved ? 'Unsave' : 'Save'}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Bookmark
-              className={cn(
-                'h-6 w-6 transition-all duration-200',
-                saved
-                  ? 'text-primary fill-primary scale-110'
-                  : 'text-foreground group-hover:text-primary'
-              )}
-            />
-          </button>
+            <motion.div
+              animate={saved ? { scale: [1, 1.3, 1] } : {}}
+              transition={{ duration: 0.3 }}
+            >
+              <Bookmark
+                className={cn(
+                  'h-6 w-6 transition-all duration-200',
+                  saved
+                    ? 'text-primary fill-primary'
+                    : 'text-foreground group-hover:text-primary'
+                )}
+              />
+            </motion.div>
+          </motion.button>
         </div>
 
         <div className="space-y-1.5">
-          <p className="font-semibold text-sm">{likes.toLocaleString()} likes</p>
-
-          {postReactions.length > 0 && (
-            <div className="flex items-center gap-2">
-              <div className="flex -space-x-1">
-                {Object.entries(
-                  postReactions.reduce(
-                    (acc, reaction) => {
-                      acc[reaction.reaction] = (acc[reaction.reaction] || 0) + 1
-                      return acc
-                    },
-                    {} as Record<string, number>
-                  )
-                )
-                  .sort(([, a], [, b]) => b - a)
-                  .slice(0, 3)
-                  .map(([emoji, count]) => (
-                    <div
-                      key={emoji}
-                      className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center text-xs border border-border/30"
-                      title={`${count} ${emoji}`}
-                    >
-                      {emoji}
-                    </div>
-                  ))}
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {postReactions.length} reaction{postReactions.length !== 1 ? 's' : ''}
-              </span>
-            </div>
-          )}
+          <motion.p
+            className="font-semibold text-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            key={likes}
+          >
+            {likes.toLocaleString()} likes
+          </motion.p>
 
           {image && caption && (
             <p className="text-sm leading-relaxed">
@@ -347,12 +326,14 @@ export default function PostCard({
             </p>
           )}
           {comments > 0 && (
-            <button
+            <motion.button
               className="text-sm text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setCommentsDialogOpen(true)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               View all {comments} comments
-            </button>
+            </motion.button>
           )}
         </div>
       </div>
@@ -407,12 +388,6 @@ export default function PostCard({
         initialContent={caption}
         initialImage={image}
       />
-
-      <ReactionPicker
-        isOpen={reactionPickerOpen}
-        onReaction={handleReaction}
-        onClose={() => setReactionPickerOpen(false)}
-      />
-    </article>
+    </motion.article>
   )
 }

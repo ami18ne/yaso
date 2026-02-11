@@ -36,6 +36,19 @@ export function broadcastUpdate(type: string, data: any) {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configuration endpoint - provides public Supabase credentials to client
+  app.get('/api/config', (req, res) => {
+    res.json({
+      supabase: {
+        url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL,
+        anonKey: process.env.VITE_SUPABASE_ANON_KEY,
+      },
+      agora: {
+        appId: process.env.VITE_AGORA_APP_ID,
+      },
+    })
+  })
+
   // Messaging routes
 
   // Get messages for a conversation

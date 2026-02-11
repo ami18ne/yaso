@@ -10,6 +10,12 @@ export function DebugCommunities() {
   useEffect(() => {
     const debug = async () => {
       try {
+        if (!supabase) {
+          setStatus('Supabase is not configured')
+          setError('Supabase is not configured. Check your environment variables.')
+          return
+        }
+
         // 1. Check auth
         const {
           data: { user },

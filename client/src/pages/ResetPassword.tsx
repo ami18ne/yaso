@@ -41,6 +41,10 @@ export default function ResetPassword() {
     setLoading(true)
 
     try {
+      if (!supabase) {
+        throw new Error('Supabase is not configured')
+      }
+
       const { error } = await supabase.auth.updateUser({
         password: password,
       })

@@ -53,6 +53,10 @@ export function useAddComment() {
   return useMutation({
     mutationFn: async ({ postId, content }: { postId: string; content: string }) => {
       try {
+        if (!supabase) {
+          throw new Error('Supabase is not configured')
+        }
+
         const {
           data: { user },
         } = await supabase.auth.getUser()

@@ -23,8 +23,8 @@ export interface PerformanceMetric {
 }
 
 export class Analytics {
-  private isDev = process.env.NODE_ENV === 'development'
-  private endpoint = process.env.VITE_ANALYTICS_ENDPOINT
+  private isDev = typeof import.meta !== 'undefined' && !!(import.meta as any).env?.DEV
+  private endpoint = typeof import.meta !== 'undefined' ? (import.meta as any).env?.VITE_ANALYTICS_ENDPOINT : undefined
   private sessionId = this.generateSessionId()
   private userId: string | null = null
   private events: (PageViewEvent | UserEvent | PerformanceMetric)[] = []

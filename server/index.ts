@@ -90,7 +90,27 @@ app.use((req, res, next) => {
 })
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'unknown',
+    version: '1.0.0'
+  })
+})
+
+app.get('/api/health/detailed', (_req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV,
+    memory: process.memoryUsage(),
+    services: {
+      supabase: process.env.VITE_SUPABASE_URL ? 'configured' : 'not configured',
+      agora: process.env.VITE_AGORA_APP_ID ? 'configured' : 'not configured'
+    }
+  })
 })
 
 ;(async () => {
@@ -117,7 +137,7 @@ app.get('/api/health', (_req, res) => {
   }
 
   const portArg = getArg('--port')
-  const port = Number.parseInt(portArg || process.env.PORT || '5000', 10)
+  const port = Number.parseInt(portArg || process.env.PORT || '4000', 10)
   server.listen(port, '0.0.0.0', () => {
     log(`serving on port ${port}`)
   })

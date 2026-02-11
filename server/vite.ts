@@ -1,6 +1,7 @@
 import fs from 'node:fs'
 import type { Server } from 'node:http'
 import path from 'node:path'
+import { fileURLToPath } from 'url'
 import express, { type Express } from 'express'
 import { nanoid } from 'nanoid'
 import { createLogger, createServer as createViteServer } from 'vite'
@@ -22,9 +23,13 @@ export function log(message: string, source = 'express') {
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
     middlewareMode: true,
-    hmr: {
-      server,
-    },
+    // In Codespaces, don't configure HMR - let client connect through proxy
+    // In local dev, let Vite handle the WebSocket server
+    ...(process.env.CODESPACES !== 'true' && {
+      hmr: {
+        server,
+      },
+    }),
     allowedHosts: true as const,
   }
 
@@ -47,11 +52,13 @@ export async function setupVite(app: Express, server: Server) {
     const url = req.originalUrl
 
     try {
-      const clientTemplate = path.resolve(import.meta.dirname, '..', 'client', 'index.html')
+      const __filename = fileURLToPath(import.meta.url)
+      const __dirname = path.dirname(__filename)
+      const clientTemplate = path.resolve(__dirname, '..', 'client', 'index.html')
 
-      // always reload the index.html file from disk incase it changes
+      // always reload the index.html file from disk in case it changes
       let template = await fs.promises.readFile(clientTemplate, 'utf-8')
-      template = template.replace(`src="/src/main.tsx"`, `src="/client/src/main.tsx?v=${nanoid()}`)
+      // let Vite handle module resolution and query params; do not rewrite the src attribute
       const page = await vite.transformIndexHtml(url, template)
       res.status(200).set({ 'Content-Type': 'text/html' }).end(page)
     } catch (e) {

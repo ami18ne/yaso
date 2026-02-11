@@ -280,7 +280,7 @@ function isLink(element: Element): boolean {
 }
 
 // Run accessibility audit in development
-if (process.env.NODE_ENV === 'development') {
+if (typeof import.meta !== 'undefined' && (import.meta as any).env?.DEV) {
   if (typeof window !== 'undefined') {
     window.addEventListener('load', () => {
       const issues = checkAccessibility()

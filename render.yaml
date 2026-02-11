@@ -2,9 +2,33 @@ services:
   - type: web
     name: yaso-app
     env: node
-    plan: free
+    plan: standard # Change to free for testing
+    runtime: node-20
     buildCommand: "npm install && npm run build"
     startCommand: "npm start"
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: NODE_VERSION
-        value: "22"
+        value: "20"
+      - key: PORT
+        value: "4000"
+      - key: LOG_LEVEL
+        value: info
+      # Supabase
+      - key: VITE_SUPABASE_URL
+        sync: false
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      # Agora
+      - key: VITE_AGORA_APP_ID
+        sync: false
+      # Security
+      - key: SESSION_SECRET
+        sync: false
+    healthCheckPath: /api/health
+    region: oregon # Choose closer region as needed
+    autoDeploy: true
+    disableSslRedirect: false

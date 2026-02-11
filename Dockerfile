@@ -22,7 +22,9 @@ RUN npm prune --production
 FROM node:20-alpine AS production
 
 # Set the node environment to production
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    PORT=4000 \
+    LOG_LEVEL=info
 
 # Set the working directory
 WORKDIR /usr/src/app
@@ -36,6 +38,10 @@ COPY --from=builder /usr/src/app/dist ./dist
 
 # Expose the port the app runs on
 EXPOSE 4000
+
+# Health check to monitor the application
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:4000/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
 
 # The command to start the production server
 CMD ["npm", "start"]

@@ -205,20 +205,25 @@ export function useUpdatePost() {
   )
 }
 
-export function usePostReactions(postId: string) {
+export function usePostLikes(postId: string) {
   return useQuery({
-    queryKey: ['post-reactions', postId],
+    queryKey: ['post-likes', postId],
     queryFn: async () => {
       if (!postId) return []
 
+      if (!supabase) {
+        logger.warn('Supabase not configured - returning empty likes')
+        return []
+      }
+
       const { data, error } = await supabase
-        .from('post_reactions')
-        .select('reaction, user_id, profiles:user_id (username)')
+        .from('likes')
+        .select('user_id, profiles:user_id (username)')
         .eq('post_id', postId)
 
       if (error) {
-        logger.error('Error fetching post reactions', error)
-        throw error
+        logger.error('Error fetching post likes', error)
+        return []
       }
       return data || []
     },
@@ -226,44 +231,16 @@ export function usePostReactions(postId: string) {
   })
 }
 
+// Deprecated: Use useLikePost instead. Kept for backwards compatibility.
+export function usePostReactions(postId: string) {
+  // Fallback to likes since post_reactions table doesn't exist in schema
+  return usePostLikes(postId)
+}
+
+// Deprecated: Use useLikePost instead. Kept for backwards compatibility.
 export function useTogglePostReaction() {
-  const queryClient = useQueryClient()
-  return useAuthenticatedMutation(
-    async ({ postId, reaction }: { postId: string; reaction: string }, user) => {
-      const { data: existingReaction, error: fetchError } = await supabase
-        .from('post_reactions')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', user.id)
-        .single()
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        // PGRST116 = no rows found
-        throw new Error(`Failed to check for existing reaction: ${fetchError.message}`)
-      }
-
-      if (existingReaction) {
-        const { error: updateError } = await supabase
-          .from('post_reactions')
-          .update({ reaction })
-          .eq('id', existingReaction.id)
-        if (updateError) throw new Error(`Failed to update reaction: ${updateError.message}`)
-      } else {
-        const { error: insertError } = await supabase
-          .from('post_reactions')
-          .insert([{ post_id: postId, user_id: user.id, reaction }])
-        if (insertError) throw new Error(`Failed to add reaction: ${insertError.message}`)
-      }
-    },
-    {
-      onSuccess: (_, variables) => {
-        queryClient.invalidateQueries({ queryKey: ['post-reactions', variables.postId] })
-      },
-      onError: (error) => {
-        logger.error('Failed to toggle post reaction', error)
-      },
-    }
-  )
+  // Fallback to useLikePost
+  return useLikePost()
 }
 
 export function useSavedPosts() {
